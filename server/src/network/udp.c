@@ -11,7 +11,7 @@
 #include "udp.h"
 #include "../errors/error.h"
 
-void udp_thread(void *arg){
+void udp_thread_task(void *arg){
     udp_thread_args *args = (udp_thread_args *)arg;
 
     int udp_sock;
@@ -41,15 +41,18 @@ void udp_thread(void *arg){
     printf("[UDP] Discovery thread started on port %d\n", UDP_PORT);
 
     while (1) {
+        printf("J'ECOUTE !!!\n");
         ssize_t recv_len = recvfrom(udp_sock, buffer, sizeof(buffer) - 1, 0, (struct sockaddr *)&client_addr, &client_len);
         if (recv_len < 0) {
             perror("recvfrom");
             continue;
         }
+        printf("%d\n", recv_len);
 
         buffer[recv_len] = '\0';
+        printf("[UDP] RECEIVED : %s\n", buffer);
 
-        if (strcmp(buffer, "looking for quiznet servers") == 0) {
+        if (strcmp(buffer, "looking for quiznet servers\n") == 0) {
             char response[BUFFER_SIZE];
             snprintf(response, sizeof(response), "hello i’m a quiznet server:%s:%s", args->server_name, args->port_tcp);
 
@@ -70,7 +73,9 @@ pthread_t start_udp(const char *SERVER_NAME , const char *PORT_TCP) {
     pthread_t udp_thread;
     udp_thread_args udp_args = {SERVER_NAME, PORT_TCP};
 
-    if (pthread_create(&udp_thread, NULL, udp_thread, &udp_args) != 0) {
+    // udp_thread_task(&udp_args);
+
+    if (pthread_create(&udp_thread, NULL, udp_thread_task, &udp_args) != 0) {
         perror("pthread_create");
         exit(EXIT_FAILURE);
     }

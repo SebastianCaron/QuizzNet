@@ -1,10 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
 #include <errno.h>
+#include "network/udp.h"
 
 #define UDP_PORT 5555
 #define BUFFER_SIZE 512
@@ -18,5 +16,9 @@ int main(int argc, char *argv[]) {
     const char *SERVER_NAME = argv[1];
     const char *PORT_TCP = argv[2];
 
+    start_udp(SERVER_NAME, PORT_TCP);
     
+    while(1){
+
+    }
 }
