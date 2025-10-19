@@ -153,7 +153,7 @@ int receive_from(server *s, int i) {
     if (s->current_size < s->size_buffer)
         s->buffer[s->current_size] = '\0';
 
-    printf("[TCP] Reçu %zd octets du client fd=%d\n", s->current_size, fd);
+    // printf("[TCP] Reçu %zd octets du client fd=%d\n", s->current_size, fd);
     return s->current_size;
 }
 
@@ -168,7 +168,9 @@ void server_client_procedure(server *s){
             clist_pop(s->clients, i);
             continue;
         }
-        handle_request(s->buffer, (client *)clist_get(s->clients, i));
+        if(resp > 0){
+            handle_request(s->buffer, (client *)clist_get(s->clients, i));
+        }
         i++;
     }
 }

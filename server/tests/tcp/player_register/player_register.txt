@@ -1,0 +1,5 @@
+POST player/register
+{
+    "pseudo":"Player1",
+    "password":"mypassword123"
+}

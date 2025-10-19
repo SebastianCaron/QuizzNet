@@ -2,10 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+
 #include "network/udp.h"
+#include "network/network.h"
 
 #define UDP_PORT 5555
-#define BUFFER_SIZE 512
 
 int main(int argc, char *argv[]) {
     if (argc < 3) {
@@ -17,8 +18,9 @@ int main(int argc, char *argv[]) {
     const char *PORT_TCP = argv[2];
 
     start_udp(SERVER_NAME, PORT_TCP);
-    
-    while(1){
 
+    server *s = start_server(atoi(argv[2]));
+    while(1){
+        server_client_procedure(s);
     }
 }

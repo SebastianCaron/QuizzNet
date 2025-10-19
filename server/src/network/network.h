@@ -3,6 +3,8 @@
 #define MAX_CLIENTS 512
 #define BUFFER_SIZE 1024
 
+#include <arpa/inet.h>
+
 #include "../utils/chained_list.h"
 
 typedef struct {
@@ -26,3 +28,5 @@ typedef struct {
 server *start_server(int port);
 
 void destroy_server(server *);
+
+void server_client_procedure(server *s);

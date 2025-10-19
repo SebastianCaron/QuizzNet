@@ -39,10 +39,10 @@ mrpropre: clean
 
 fr0: mrpropre all
 	clear
-	./server 'les_12_coups' 90504
+	./server 'les_12_coups' 9504
 
 debug: all
 	clear
-	valgrind --leak-check=full --log-file=val.txt ./server 'les_12_coups' 90504
+	valgrind --leak-check=full --log-file=val.txt ./server 'les_12_coups' 9504
 
 -include $(DEPS)

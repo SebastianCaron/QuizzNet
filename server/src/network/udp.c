@@ -52,7 +52,7 @@ void udp_thread_task(void *arg){
         buffer[recv_len] = '\0';
         printf("[UDP] RECEIVED : %s\n", buffer);
 
-        if (strcmp(buffer, "looking for quiznet servers\n") == 0) {
+        if (strcmp(buffer, "looking for quiznet servers") == 0) {
             char response[BUFFER_SIZE];
             snprintf(response, sizeof(response), "hello i’m a quiznet server:%s:%s", args->server_name, args->port_tcp);
 
