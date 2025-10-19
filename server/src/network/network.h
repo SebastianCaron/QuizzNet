@@ -3,6 +3,8 @@
 #define MAX_CLIENTS 512
 #define BUFFER_SIZE 1024
 
+#include "../utils/chained_list.h"
+
 typedef struct {
     char *ip;
     int port;
@@ -11,13 +13,14 @@ typedef struct {
 
     struct sockaddr_in address;
 
-    int clients[MAX_CLIENTS];
-    int number_client;
+    chained_list *clients;
 
     char *buffer;
     int size_buffer;
     ssize_t current_size;
 } server;
+
+
 
 
 server *start_server(int port);

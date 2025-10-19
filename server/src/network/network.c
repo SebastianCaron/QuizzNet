@@ -11,7 +11,10 @@
 #include <netinet/in.h>
 
 #include "network.h"
+#include "client.h"
 #include "../errors/error.h"
+#include "../endpoints/endpoints.h"
+#include "../utils/chained_list.h"
 
 int set_nonblocking(int fd) {
     int flags = fcntl(fd, F_GETFL, 0);
@@ -27,6 +30,12 @@ server *start_server(int port){
         return NULL;
     }
 
+    res->clients = clist_init();
+    if(res->clients == NULL){
+        throw_error(MEMORY_ALLOCATION, "Erreur allocation liste chainee dans start server");
+        return NULL;
+    }
+
     res->buffer = calloc(BUFFER_SIZE, sizeof(char));
     if(res->buffer == NULL){
         throw_error(MEMORY_ALLOCATION, NULL);
@@ -38,7 +47,7 @@ server *start_server(int port){
 
     res->server_fd_tcp = socket(AF_INET, SOCK_STREAM, 0);
     if (res->server_fd_tcp < 0) {
-        perror("socket");
+        throw_error(SOCKET, NULL);
         exit(EXIT_FAILURE);
     }
 
@@ -50,13 +59,13 @@ server *start_server(int port){
     (res->address).sin_port = htons(port);
 
     if (bind(res->server_fd_tcp, (struct sockaddr *)&(res->address), sizeof(res->address)) < 0) {
-        perror("bind");
+        throw_error(BIND, NULL);
         close(res->server_fd_tcp);
         exit(EXIT_FAILURE);
     }
 
     if (listen(res->server_fd_tcp, MAX_CLIENTS) < 0) {
-        perror("listen");
+        throw_error(LISTEN, NULL);
         close(res->server_fd_tcp);
         exit(EXIT_FAILURE);
     }
@@ -76,55 +85,90 @@ void accept_new_connection(server *s){
     if (client_fd >= 0) {
         set_nonblocking(client_fd);
 
-        if (s->number_client == MAX_CLIENTS) {
+        if (clist_size(s->clients) == MAX_CLIENTS) {
             printf("[TCP] Too many clients, refusing %s\n", inet_ntoa(client_addr.sin_addr));
             close(client_fd);
         } else {
-            s->clients[s->number_client] = client_fd;
-            s->number_client++;
+            client *nc = client_init(client_fd);
+            if(!nc){
+                throw_error(MEMORY_ALLOCATION, NULL);
+                return;
+            }
+            clist_append(s->clients, nc);
             printf("[TCP] Client connected: %s:%d (fd=%d)\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port), client_fd);
         }
     }
 }
 
 void destroy_server(server *s){
-
+    if(!s) return;
+    free(s->buffer);
+    free(s);
 }
 
-void receive_from(server *s, int i){
-    int fd = s->clients[i];
-    if (fd == -1) return;
+int receive_from(server *s, int i) {
+    client *client = clist_get(s->clients, i);
 
+    int fd = client->fd;
+    if (fd < 0) return;
+
+    ssize_t bytes = 0;
     s->current_size = 0;
-    ssize_t bytes;
-    bytes = recv(fd, s->buffer, sizeof(char) * s->size_buffer - 1, 0);
-    s->current_size += bytes;
-    while(bytes > 0){
-        // REALLOCATE BUFFER
-        if(s->current_size == s->size_buffer-1){
-            void *old_buffer = s->buffer;
-            s->buffer = realloc(s->buffer, (s->size_buffer + BUFFER_SIZE) * sizeof(char));
-            if(s->buffer == NULL){
-                s->buffer = old_buffer;
-                throw_error(MEMORY_ALLOCATION, NULL);
-                return;
+
+    while (1) {
+        size_t remaining = s->size_buffer - s->current_size;
+
+        if (remaining == 0) {
+            size_t new_size = s->size_buffer + BUFFER_SIZE;
+            void *tmp = realloc(s->buffer, new_size);
+            if (!tmp) {
+                throw_error(MEMORY_ALLOCATION, "Erreur reallocation dans receive_from");
+                return -2;
             }
-            s->current_size += BUFFER_SIZE;
+            s->buffer = tmp;
+            s->size_buffer = new_size;
+            remaining = BUFFER_SIZE;
         }
 
+        bytes = recv(fd, s->buffer + s->current_size, remaining, 0);
 
-        bytes = recv(fd, s->buffer + s->current_size, s->size_buffer * sizeof(char) - 1, 0);
-        s->current_size += bytes;
-    }
-    
-    if (bytes < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
+        if (bytes > 0) {
+            s->current_size += bytes;
+            continue;
+        }
+
+        if (bytes == 0) {
+            printf("[TCP] Client %d closed connection.\n", i);
+            return -1;
+        }
+
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            break;
+        }
+
         perror("recv");
-        close(fd);
-        s->clients[i] = s->clients[s->number_client-1]; // C'est moche
-        s->number_client--;
+        return -2;
     }
+
+    if (s->current_size < s->size_buffer)
+        s->buffer[s->current_size] = '\0';
+
+    printf("[TCP] Reçu %zd octets du client fd=%d\n", s->current_size, fd);
+    return s->current_size;
 }
 
+
 void server_client_procedure(server *s){
-    
+    accept_new_connection(s);
+    int resp = 0;
+    int i = 0;
+    while(i < clist_size(s->clients)){
+        resp = receive_from(s, i);
+        if(resp == -1){
+            clist_pop(s->clients, i);
+            continue;
+        }
+        handle_request(s->buffer, (client *)clist_get(s->clients, i));
+        i++;
+    }
 }
