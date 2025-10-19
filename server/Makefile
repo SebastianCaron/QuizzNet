@@ -9,7 +9,7 @@ else
 CFLAGS ?= -Wall -MMD -03 -DNDEBUG
 endif
 
-LDFLAGS = 
+LDFLAGS = -ldl -lpthread
 
 OBJS := $(shell find $(SRC_DIR) -name "*.c" | sed 's/.c$$/.o/g' | sed 's/$(SRC_DIR)/$(BIN_DIR)/g')
 DEPS := $(OBJS:.o=.d)

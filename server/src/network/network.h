@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 
 #include "../utils/chained_list.h"
+#include "../sqlite/sqlite3.h"
 
 typedef struct {
     char *ip;
@@ -20,6 +21,8 @@ typedef struct {
     char *buffer;
     int size_buffer;
     ssize_t current_size;
+
+    sqlite3 *db;
 } server;
 
 
