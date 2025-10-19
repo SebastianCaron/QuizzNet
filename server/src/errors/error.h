@@ -1,7 +1,12 @@
 #pragma once
 
 typedef enum {
-    MEMORY_ALLOCATION
+    MEMORY_ALLOCATION,
+    OUT_OF_RANGE,
+    EMPTY_LIST,
+    SOCKET,
+    BIND,
+    LISTEN
 } errors;
 
 #define RED(m) "\033[01;31m"m"\033[0m"
