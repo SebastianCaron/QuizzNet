@@ -6,6 +6,7 @@
 #include "network/udp.h"
 #include "network/network.h"
 #include "db/db.h"
+#include "db/initdb.h"
 
 #define UDP_PORT 5555
 
@@ -22,6 +23,7 @@ int main(int argc, char *argv[]) {
 
     server *s = start_server(atoi(argv[2]));
     add_sqlite_to_server(s);
+    init_db(s);
     while(1){
         server_client_procedure(s);
     }

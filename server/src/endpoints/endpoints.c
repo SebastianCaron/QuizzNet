@@ -29,8 +29,8 @@ void send_error_response(client *cl){
 
 }
 
-void handle_request(char *requets, client *cl){
-    endpoints ep = get_endpoint(requets);
+void handle_request(char *request, client *cl){
+    endpoints ep = get_endpoint(request);
     printf("ENDPOINTS: %d\n", ep);
     
     switch (ep)
