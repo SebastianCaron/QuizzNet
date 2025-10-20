@@ -2,6 +2,8 @@
 
 #include "../network/network.h"
 
+#define SQLITE_RESULT_BLOCK_SIZE 256
+
 typedef struct {
     int column_count;
     int row_count;
@@ -10,9 +12,10 @@ typedef struct {
 } SqliteResult;
 
 
-void free_result(SqliteResult *res);
 
-SqliteResult *exec_select(server *s, char *sql);
+void sqlite_result_destroy(SqliteResult *res);
+
+SqliteResult *exec_query(server *s, char *sql);
 
 void close_db(server *s);
 

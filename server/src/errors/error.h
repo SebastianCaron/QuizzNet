@@ -6,7 +6,10 @@ typedef enum {
     EMPTY_LIST,
     SOCKET,
     BIND,
-    LISTEN
+    LISTEN,
+    DATABASE,
+    DATABASE_PREPARE,
+    DATABASE_EXEC
 } errors;
 
 #define RED(m) "\033[01;31m"m"\033[0m"
@@ -17,6 +20,6 @@ typedef enum {
 #define CYAN(m) "\033[01;36m"m"\033[0m"
 #define WHITE(m) "\033[01;37m"m"\033[0m"
 
-void throw_error(errors, char **);
+void throw_error(errors, char *);
 
 void debug_log(char *);
