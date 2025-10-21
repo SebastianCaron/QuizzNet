@@ -2,7 +2,11 @@
 #include <string.h>
 
 #include "../network/client.h"
+#include "../network/network.h"
 #include "endpoints.h"
+
+/* ENDPOINTS */
+#include "./player/register/register.h"
 
 char is_valid_char(char letter){
     return (letter >= 'A' && letter <= 'Z') || (letter >= 'a' && letter <= 'z') || letter == '/' || letter == ' ' || letter == '_';
@@ -29,14 +33,14 @@ void send_error_response(client *cl){
 
 }
 
-void handle_request(char *request, client *cl){
-    endpoints ep = get_endpoint(request);
+void handle_request(server *s, char *requets, client *cl){
+    endpoints ep = get_endpoint(requets);
     printf("ENDPOINTS: %d\n", ep);
     
     switch (ep)
     {
     case POST_PLAYER_REGISTER:
-        /* code */
+        post_player_register(s, requets, cl);
         break;
     
     case INVALID_ENDPOINT:

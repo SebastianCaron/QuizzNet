@@ -169,7 +169,7 @@ void server_client_procedure(server *s){
             continue;
         }
         if(resp > 0){
-            handle_request(s->buffer, (client *)clist_get(s->clients, i));
+            handle_request(s, s->buffer, (client *)clist_get(s->clients, i));
         }
         i++;
     }

@@ -8,4 +8,4 @@ typedef enum {
     POST_PLAYER_REGISTER
 } endpoints;
 
-void handle_request(char *requets, client *cl);
+void handle_request(server *s, char *requets, client *cl);
