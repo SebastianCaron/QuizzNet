@@ -9,7 +9,8 @@ typedef enum {
     LISTEN,
     DATABASE,
     DATABASE_PREPARE,
-    DATABASE_EXEC
+    DATABASE_EXEC,
+    JSON_PARSING
 } errors;
 
 #define RED(m) "\033[01;31m"m"\033[0m"
