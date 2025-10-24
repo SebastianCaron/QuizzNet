@@ -20,23 +20,40 @@ endpoints get_endpoint(char *request){
         i++;
     }
     i--;
+    // ADD ENDPOINT ROUTE FROM HERE
     if(strncmp("POST player/register", request, i)) return POST_PLAYER_REGISTER;
     
     return INVALID_ENDPOINT;
 }
 
 void send_invalid_response(client *cl){
-
+    const char *response = 
+    "{\n"
+    "   \"statut\":\"400\",\n"
+    "   \"message\": \"Bad request\"\n"
+    "}\n";
+    send_response(cl, response);
 }
 
 void send_error_response(client *cl){
-
+    const char *response = 
+    "{\n"
+    "   \"statut\":\"520\",\n"
+    "   \"message\": \"Unknown Error\"\n"
+    "}\n";
+    send_response(cl, response);
 }
+
+void send_response(client *cl, char *response){
+    if (!cl || !response) return;
+    write(cl->fd, response, strlen(response));
+}
+
 
 void handle_request(server *s, char *requets, client *cl){
     endpoints ep = get_endpoint(requets);
     printf("ENDPOINTS: %d\n", ep);
-    
+    // HANDLE ROUTE HERE
     switch (ep)
     {
     case POST_PLAYER_REGISTER:

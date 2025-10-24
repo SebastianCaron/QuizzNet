@@ -9,3 +9,7 @@ typedef enum {
 } endpoints;
 
 void handle_request(server *s, char *requets, client *cl);
+
+void send_invalid_response(client *cl);
+void send_error_response(client *cl);
+void send_response(client *cl, char *response);
