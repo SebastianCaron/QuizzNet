@@ -11,7 +11,7 @@
 #include "udp.h"
 #include "../errors/error.h"
 
-void udp_thread_task(void *arg){
+void* udp_thread_task(void *arg){
     udp_thread_args *args = (udp_thread_args *)arg;
 
     int udp_sock;
@@ -21,7 +21,8 @@ void udp_thread_task(void *arg){
 
     if ((udp_sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         perror("socket");
-        pthread_exit(NULL);
+        free(args);
+        return NULL;
     }
 
     int opt = 1;
@@ -35,7 +36,8 @@ void udp_thread_task(void *arg){
     if (bind(udp_sock, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
         perror("bind");
         close(udp_sock);
-        pthread_exit(NULL);
+        free(args);
+        return NULL;
     }
 
     printf("[UDP] Discovery thread started on port %d\n", UDP_PORT);
@@ -66,17 +68,26 @@ void udp_thread_task(void *arg){
     }
 
     close(udp_sock);
-    pthread_exit(NULL);
+    free(args);
+    return NULL;
 }
 
 pthread_t start_udp(const char *SERVER_NAME , const char *PORT_TCP) {
     pthread_t udp_thread;
-    udp_thread_args udp_args = {SERVER_NAME, PORT_TCP};
+    udp_thread_args *udp_args = malloc(sizeof(udp_thread_args));
+    if (!udp_args) {
+        perror("malloc");
+        exit(EXIT_FAILURE);
+    }
+    
+    udp_args->server_name = SERVER_NAME;
+    udp_args->port_tcp = PORT_TCP;
 
     // udp_thread_task(&udp_args);
 
-    if (pthread_create(&udp_thread, NULL, udp_thread_task, &udp_args) != 0) {
+    if (pthread_create(&udp_thread, NULL, udp_thread_task, udp_args) != 0) {
         perror("pthread_create");
+        free(udp_args);
         exit(EXIT_FAILURE);
     }
 
