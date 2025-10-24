@@ -1,6 +1,7 @@
 #pragma once
 
 typedef enum {
+    NULL_VARIABLE,
     MEMORY_ALLOCATION,
     OUT_OF_RANGE,
     EMPTY_LIST,
@@ -10,6 +11,7 @@ typedef enum {
     DATABASE,
     DATABASE_PREPARE,
     DATABASE_EXEC,
+    DB_QUERY,
     JSON_PARSING
 } errors;
 
