@@ -1,2 +1,5 @@
 .vscode/settings.json
-./server/*.db
+
+*.db
+*.d
+*.o
