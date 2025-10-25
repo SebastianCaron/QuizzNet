@@ -1,7 +1,7 @@
 #include "requestsdb.h"
 
-char* get_statement(int id, server s){
-    int retour_snp
+char *get_statement(server *s, int id){
+    int retour_snp;
     SqliteResult* resquery;
     char query[512];
     char* result = malloc(512*sizeof(char));
@@ -21,8 +21,8 @@ char* get_statement(int id, server s){
     return result;
 }
 
-char* get_answers(int id, server s){
-    int retour_snp
+char *get_answers(server *s, int id){
+    int retour_snp;
     SqliteResult* resquery;
     char query[512];
     char* result = malloc(512*sizeof(char));
@@ -43,10 +43,10 @@ char* get_answers(int id, server s){
 
 }
 
-int get_type(int id, server s){
+int get_type(server *s, int id){
     SqliteResult* resquery;
     char query[512];
-    int result
+    int result;
     
     int retour_snp = snprintf(query, "SELECT type FROM questions q WHERE q.id = %d;", id);
     if (retour_snp<0){
