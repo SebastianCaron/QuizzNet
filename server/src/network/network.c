@@ -39,7 +39,7 @@ server *start_server(int port){
     res->sessions = clist_init();
     if(res->sessions == NULL){
         throw_error(MEMORY_ALLOCATION, "Erreur allocation liste chainee dans start server (sessions)");
-        return NULL
+        return NULL;
     }
 
     res->session_counter = 0;
