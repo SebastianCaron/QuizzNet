@@ -5,6 +5,7 @@ typedef enum {
     MEMORY_ALLOCATION,
     OUT_OF_RANGE,
     EMPTY_LIST,
+    NOT_FOUND,
     SOCKET,
     BIND,
     LISTEN,
