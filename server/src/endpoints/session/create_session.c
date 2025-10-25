@@ -2,7 +2,7 @@
 #include "../../game_logic/session.h"
 #include "../endpoints.h"
 #include "../../network/network.h"
-#include "../json/json.h"
+#include "../../json/json.h"
 #include "../../network/client.h"
 #include "../../utils/chained_list.h"
 
@@ -12,7 +12,7 @@ int post_session_create(server* s, char* request, client *cl){
     session* new_session = malloc(sizeof(session));
     if(!new_session){
         throw_error(MEMORY_ALLOCATION, "Erreur allocation session_create : new session");
-        return NULL;
+        return 1;
     }
 
     cJSON *json = cJSON_Parse(request);
@@ -39,7 +39,7 @@ int post_session_create(server* s, char* request, client *cl){
     new_session->players = clist_init();
     if(!(new_session->players)){
         throw_error(MEMORY_ALLOCATION, "Erreur allocation session_create : new_session -> client");
-        return NULL;
+        return 1;
     }
     clist_append(new_session->players, cl);
     new_session->server = s;
@@ -59,7 +59,7 @@ int post_session_create(server* s, char* request, client *cl){
 
         if (retour_snp<0){
             throw_error(ENCODING_ERROR, "Erreur snprintf create session CLASSIC");
-            return NULL;
+            return 1;
         }
 
     } else {
@@ -78,7 +78,7 @@ int post_session_create(server* s, char* request, client *cl){
 
         if (retour_snp<0){
             throw_error(ENCODING_ERROR, "Erreur snprintf create session BATTLE");
-            return NULL;
+            return 1;
         }
     }
 
