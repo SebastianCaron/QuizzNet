@@ -44,4 +44,7 @@ typedef struct {
 void *handle_session(void *session);
 
 session_type get_session_type(char* mode);
+
 difficulty get_session_difficulty(char* difficulty);
+
+void session_destroy(session *);
