@@ -110,6 +110,8 @@ void accept_new_connection(server *s){
 
 void destroy_server(server *s){
     if(!s) return;
+    clist_destroy(s->clients);
+    clist_destroy(s->sessions);
     free(s->buffer);
     free(s);
 }
