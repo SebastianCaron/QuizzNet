@@ -34,7 +34,7 @@ mrpropre: clean
 	clear
 	rm -f $(TARGET)
 	rm -rf val.txt
-	rm -f q.bot
+	rm -f test.db
 
 
 fr0: mrpropre all
