@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "../sqlite/sqlite3.h"
 #include "../network/network.h"
 #include "../errors/error.h"
