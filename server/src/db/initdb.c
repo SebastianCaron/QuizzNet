@@ -41,7 +41,7 @@ void init_table_questions(server *s){
             "id INT PRIMARY KEY NOT NULL,"
             "difficulty INT NOT NULL,"
             "type INT NOT NULL,"
-            "enonce VARCHAR(500),"
+            "statement VARCHAR(500),"
             "answers VARCHAR(500)"
         ")"
     );

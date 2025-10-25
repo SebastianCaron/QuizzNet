@@ -14,6 +14,7 @@ client *client_init(int fd){
     }
 
     res->fd = fd;
+    res-> connected = false;
     return res;
 }
 

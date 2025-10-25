@@ -1,0 +1,58 @@
+#include "requestsdb.h"
+
+char* get_statement(int id, server s){
+    int retour_snp
+    SqliteResult* resquery;
+    char query[512];
+    char* result = malloc(512*sizeof(char));
+    if(result == NULL){
+        perror("Error Malloc");
+        exit(2);
+    }
+
+    retour_snp = snprintf(query, "SELECT statement FROM questions q WHERE q.id = %d;", id);
+    if (retour_snp<0){
+        perror("Error snprintf");
+    }
+
+    resquery = exec_query(s, query);
+    strcpy(result, resquery->rows[0][0]);
+    return result;
+}
+
+char* get_answers(int id, server s){
+    int retour_snp
+    SqliteResult* resquery;
+    char query[512];
+    char* result = malloc(512*sizeof(char));
+    if(result == NULL){
+        perror("Error Malloc");
+        exit(2);
+    }
+    
+    retour_snp = snprintf(query, "SELECT answers FROM questions q WHERE q.id = %d;", id);
+    if (retour_snp<0){
+        perror("Error snprintf");
+    }
+
+    resquery = exec_query(s, query);
+    strcpy(result, resquery->rows[0][0]);
+    return result;
+
+}
+
+int get_type(int id, server s){
+    SqliteResult* resquery;
+    char query[512];
+    int result
+    
+    int retour_snp = snprintf(query, "SELECT type FROM questions q WHERE q.id = %d;", id);
+    if (retour_snp<0){
+        perror("Error snprintf");
+    }
+
+    resquery = exec_query(s, query);
+    result = atoi(resquery->rows[0][0]);
+    return result;
+
+}
