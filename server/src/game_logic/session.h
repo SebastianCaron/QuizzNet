@@ -3,6 +3,8 @@
 #include "../network/network.h"
 #include "../utils/chained_list.h"
 
+#define SESSION_START_COOLDOWN 3 // in seconds
+
 typedef enum{
     EASY,
     MEDIUM,
@@ -34,8 +36,6 @@ typedef struct {
     int nb_players;
     int max_nb_players;
     session_status status;
-
-
 
     chained_list *players;
     server *server;
