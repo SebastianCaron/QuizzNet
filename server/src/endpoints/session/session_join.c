@@ -12,8 +12,9 @@ int post_session_join(server* s, char* request, client *cl){
     int player_size;
     session* session_to_join;
     char* str_tmp;
+    client* player;
     char response[1024] = {'\0'};
-
+    char *response_other_players;
     cJSON *json = cJSON_Parse(request);
     if (json == NULL) {
         const char *error_ptr = cJSON_GetErrorPtr();
@@ -25,8 +26,29 @@ int post_session_join(server* s, char* request, client *cl){
     }
 
     session_to_join = get_session_by_id(s->sessions, get_from_json_int(json, "sessionId"));
+    if (session_to_join->nb_players == session_to_join->max_nb_players){
+            char *response_full =
+            "{"
+            "   \"action\":\"session/join\",\n"
+            "   \"statut\":\"403\",\n"
+            "   \"message\":\"session is full\"\n"
+            "}";
+            send_response(cl, response_full);
+            return 0;
+    }
     clist_append(session_to_join->players, cl);
     session_to_join->nb_players++;
+    retour_snp = snprintf(response_other_players,1023,"{"
+            "   \"pseudo\":\"%s\",\n"
+            "   \"nbPlayers\":\"%d\",\n"
+            "}", cl->pseudo , session_to_join->nb_players);
+
+    if (retour_snp<0){
+        throw_error(ENCODING_ERROR, "Erreur snprintf join session response other players");
+        return 1;
+    }
+
+
     // TODO Ajouter au client la session auquel il est connecté
     // NON CREATEUR. A voir si un créareur peut join sa propre session
     // SI OUI, il faudra changer la réponse (ici creator tjrs false)
@@ -49,7 +71,8 @@ int post_session_join(server* s, char* request, client *cl){
         }
 
         for (int i = 0; i<player_size; i++){
-            str_tmp = ((client *) (clist_get(session_to_join->players, i)))->pseudo;
+            player = ((client *) (clist_get(session_to_join->players, i)));
+            str_tmp = player->pseudo;
             retour_snp = snprintf(response + strlen(response), sizeof(response) - strlen(response),"\"%s\"", str_tmp);
             if (retour_snp<0){
                 throw_error(ENCODING_ERROR, "Erreur snprintf join session CLASSIC");
@@ -57,6 +80,7 @@ int post_session_join(server* s, char* request, client *cl){
             }
 
             if((i+1)!=player_size) strcat(response, ",");
+            send_response(player, response_other_players);
         }
         strcat(response, "],\n"
         "   \"jokers\":{\n"
@@ -81,7 +105,8 @@ int post_session_join(server* s, char* request, client *cl){
         }
 
         for (int i = 0; i<player_size; i++){
-            str_tmp = ((client *) (clist_get(session_to_join->players, i)))->pseudo;
+            player = ((client *) (clist_get(session_to_join->players, i)));
+            str_tmp = player->pseudo;
             retour_snp = snprintf(response + strlen(response), sizeof(response) - strlen(response),"\"%s\"", str_tmp);
             if (retour_snp<0){
                 throw_error(ENCODING_ERROR, "Erreur snprintf join session BATTLE");
@@ -89,6 +114,7 @@ int post_session_join(server* s, char* request, client *cl){
         }
 
             if((i+1)!=player_size) strcat(response, ",");
+            send_response(player, response_other_players);
         }
 
         snprintf(response + strlen(response), sizeof(response) - strlen(response), "],\n"
@@ -99,6 +125,8 @@ int post_session_join(server* s, char* request, client *cl){
         "   }"
         "}", session_to_join->nb_lives);
     }
+
+    send_response(cl, response);
 
     return 0;
 }
