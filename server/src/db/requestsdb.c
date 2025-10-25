@@ -1,3 +1,4 @@
+#include <string.h>
 #include "requestsdb.h"
 
 char *get_statement(server *s, int id){
@@ -10,7 +11,7 @@ char *get_statement(server *s, int id){
         return NULL;
     }
 
-    retour_snp = snprintf(query, "SELECT statement FROM questions q WHERE q.id = %d;", id);
+    retour_snp = snprintf(query, sizeof(query), "SELECT statement FROM questions q WHERE q.id = %d;", id);
     if (retour_snp<0){
         throw_error(ENCODING_ERROR, "Erreur snprintf create session CLASSIC");
         return NULL;
@@ -31,7 +32,7 @@ char *get_answers(server *s, int id){
         return NULL;
     }
     
-    retour_snp = snprintf(query, "SELECT answers FROM questions q WHERE q.id = %d;", id);
+    retour_snp = snprintf(query, sizeof(query), "SELECT answers FROM questions q WHERE q.id = %d;", id);
     if (retour_snp<0){
         throw_error(ENCODING_ERROR, "Erreur snprintf create session CLASSIC");
         return NULL;
@@ -48,10 +49,10 @@ int get_type(server *s, int id){
     char query[512];
     int result;
     
-    int retour_snp = snprintf(query, "SELECT type FROM questions q WHERE q.id = %d;", id);
+    int retour_snp = snprintf(query, sizeof(query), "SELECT type FROM questions q WHERE q.id = %d;", id);
     if (retour_snp<0){
         throw_error(ENCODING_ERROR, "Erreur snprintf create session CLASSIC");
-        return NULL;
+        return -1;
     }
 
     resquery = exec_query(s, query);
