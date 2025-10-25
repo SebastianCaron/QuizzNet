@@ -12,7 +12,8 @@ typedef enum {
     DATABASE_PREPARE,
     DATABASE_EXEC,
     DB_QUERY,
-    JSON_PARSING
+    JSON_PARSING,
+    ENCODING_ERROR
 } errors;
 
 #define RED(m) "\033[01;31m"m"\033[0m"

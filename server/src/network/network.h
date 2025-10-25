@@ -17,12 +17,15 @@ typedef struct {
     struct sockaddr_in address;
 
     chained_list *clients;
+    chained_list *sessions;
+    int session_counter;
 
     char *buffer;
     int size_buffer;
     ssize_t current_size;
 
     sqlite3 *db;
+
 } server;
 
 

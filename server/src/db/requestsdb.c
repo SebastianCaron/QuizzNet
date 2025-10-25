@@ -5,14 +5,15 @@ char* get_statement(int id, server s){
     SqliteResult* resquery;
     char query[512];
     char* result = malloc(512*sizeof(char));
-    if(result == NULL){
-        perror("Error Malloc");
-        exit(2);
+    if(!result){
+        throw_error(MEMORY_ALLOCATION, "Erreur allocation resultat get_statement");
+        return NULL;
     }
 
     retour_snp = snprintf(query, "SELECT statement FROM questions q WHERE q.id = %d;", id);
     if (retour_snp<0){
-        perror("Error snprintf");
+        throw_error(ENCODING_ERROR, "Erreur snprintf create session CLASSIC");
+        return NULL;
     }
 
     resquery = exec_query(s, query);
@@ -25,14 +26,15 @@ char* get_answers(int id, server s){
     SqliteResult* resquery;
     char query[512];
     char* result = malloc(512*sizeof(char));
-    if(result == NULL){
-        perror("Error Malloc");
-        exit(2);
+    if(!result){
+        throw_error(MEMORY_ALLOCATION, "Erreur allocation resultat get_answers");
+        return NULL;
     }
     
     retour_snp = snprintf(query, "SELECT answers FROM questions q WHERE q.id = %d;", id);
     if (retour_snp<0){
-        perror("Error snprintf");
+        throw_error(ENCODING_ERROR, "Erreur snprintf create session CLASSIC");
+        return NULL;
     }
 
     resquery = exec_query(s, query);
@@ -48,7 +50,8 @@ int get_type(int id, server s){
     
     int retour_snp = snprintf(query, "SELECT type FROM questions q WHERE q.id = %d;", id);
     if (retour_snp<0){
-        perror("Error snprintf");
+        throw_error(ENCODING_ERROR, "Erreur snprintf create session CLASSIC");
+        return NULL;
     }
 
     resquery = exec_query(s, query);

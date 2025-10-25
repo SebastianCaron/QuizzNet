@@ -5,8 +5,15 @@
 
 
 typedef enum{
+    EASY,
+    MEDIUM,
+    HARD
+} difficulty;
+
+
+typedef enum{
     CLASSIC,
-    BATTLE_ROYAL
+    BATTLE
 } session_type;
 
 typedef enum{
@@ -23,13 +30,19 @@ typedef struct {
     difficulty difficulty;
     int nb_questions;
     int time_limit;
+    session_type type;
+    int nb_lives;
     int nb_players;
     int max_nb_players;
     session_status status;
 
-    session_type type;
+
+
     client *players;
     server *s;
 } session;
 
 void *handle_session(void *session);
+
+session_type get_session_type(char* mode);
+difficulty get_session_difficulty(char* difficulty);
