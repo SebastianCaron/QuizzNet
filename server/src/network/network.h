@@ -36,3 +36,5 @@ server *start_server(int port);
 void destroy_server(server *);
 
 void server_client_procedure(server *s);
+
+void remove_client_from_server_procedure(server *s, client *cl);

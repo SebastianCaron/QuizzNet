@@ -184,3 +184,9 @@ void server_client_procedure(server *s){
         i++;
     }
 }
+
+void remove_client_from_server_procedure(server *s, client *cl){
+    if(!clist_remove(s->clients, cl)){
+        throw_error(NOT_FOUND, "Error, client not attached to server.");
+    }
+}
