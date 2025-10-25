@@ -60,8 +60,11 @@ void handle_request(server *s, char *request, client *cl){
     case POST_PLAYER_REGISTER:
         post_player_register(s, request, cl);
         break;
+
     case POST_SESSION_CREATE:
         post_session_create(s, request, cl);
+        break;
+    
     case INVALID_ENDPOINT:
         send_invalid_response(cl);
         break;
