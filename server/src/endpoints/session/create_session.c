@@ -8,7 +8,7 @@
 
 int post_session_create(server* s, char* request, client *cl){
     int retour_snp;
-    const char *response = malloc(1024*sizeof(char));
+    char response[1024] = {'\0'};
     session* new_session = malloc(sizeof(session));
     if(!new_session){
         throw_error(MEMORY_ALLOCATION, "Erreur allocation session_create : new session");
@@ -45,7 +45,7 @@ int post_session_create(server* s, char* request, client *cl){
     new_session->server = s;
 
     if (new_session->type == CLASSIC){
-        retour_snp = snprintf(response,"{"
+        retour_snp = snprintf(response,1023,"{"
         "   \"action\":\"session/create\",\n"
         "   \"statut\":\"201\",\n"
         "   \"message\":\"session created\",\n"
@@ -63,7 +63,7 @@ int post_session_create(server* s, char* request, client *cl){
         }
 
     } else {
-        retour_snp = snprintf(response,"{"
+        retour_snp = snprintf(response,1023,"{"
         "   \"action\":\"session/create\",\n"
         "   \"statut\":\"201\",\n"
         "   \"message\":\"session created\",\n"
