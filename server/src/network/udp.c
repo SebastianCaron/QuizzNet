@@ -49,7 +49,7 @@ void* udp_thread_task(void *arg){
             perror("recvfrom");
             continue;
         }
-        printf("%d\n", recv_len);
+        printf("%ld\n", recv_len);
 
         buffer[recv_len] = '\0';
         printf("[UDP] RECEIVED : %s\n", buffer);
