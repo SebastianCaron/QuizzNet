@@ -120,7 +120,7 @@ int receive_from(server *s, int i) {
     client *client = clist_get(s->clients, i);
 
     int fd = client->fd;
-    if (fd < 0) return;
+    if (fd < 0) return 0;
 
     ssize_t bytes = 0;
     s->current_size = 0;
