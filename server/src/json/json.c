@@ -20,7 +20,7 @@ int get_from_json_int(cJSON *json, char *key){
     return 0;
 }
 
-int* get_from_json_int_array(cJSON *json, char* key){
+int *get_from_json_int_array(cJSON *json, char *key){
     cJSON *value = cJSON_GetObjectItemCaseSensitive(json, key);
     int *result;
     int size;
