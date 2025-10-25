@@ -1,4 +1,8 @@
+#include <stdlib.h>
+
+#include "json.h"
 #include "cJSON.h"
+#include "../errors/error.h"
 
 char *get_from_json_string(cJSON *json, char *key){
     cJSON *value = cJSON_GetObjectItemCaseSensitive(json, key);
@@ -21,11 +25,11 @@ int* get_from_json_int_array(cJSON *json, char* key){
     int *result;
     int size;
 
-    if(cJSON_IsArray(value) && size = cJSON_GetArraySize(value) != 0){
+    if(cJSON_IsArray(value) && (size = cJSON_GetArraySize(value)) != 0){
         result = malloc(size*sizeof(int));
         if (!result){
             throw_error(MEMORY_ALLOCATION, "Erreur allocation get_from_json_int_array");
-            return NULL
+            return NULL;
         }
 
         for (int i = 0; i < size; i++) {
