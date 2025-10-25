@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "../network/client.h"
 #include "../network/network.h"
@@ -7,6 +8,7 @@
 
 /* ENDPOINTS */
 #include "./player/register_player.h"
+#include "./session/create_session.h"
 
 char is_valid_char(char letter){
     return (letter >= 'A' && letter <= 'Z') || (letter >= 'a' && letter <= 'z') || letter == '/' || letter == ' ' || letter == '_';
@@ -28,7 +30,7 @@ endpoints get_endpoint(char *request){
 }
 
 void send_invalid_response(client *cl){
-    const char *response = 
+    char *response = 
     "{\n"
     "   \"statut\":\"400\",\n"
     "   \"message\": \"Bad request\"\n"
@@ -37,7 +39,7 @@ void send_invalid_response(client *cl){
 }
 
 void send_error_response(client *cl){
-    const char *response = 
+    char *response = 
     "{\n"
     "   \"statut\":\"520\",\n"
     "   \"message\": \"Unknown Error\"\n"
