@@ -9,6 +9,7 @@
 /* ENDPOINTS */
 #include "./player/register_player.h"
 #include "./session/create_session.h"
+#include "./session/start_session.h"
 
 char is_valid_char(char letter){
     return (letter >= 'A' && letter <= 'Z') || (letter >= 'a' && letter <= 'z') || letter == '/' || letter == ' ' || letter == '_';
@@ -25,6 +26,7 @@ endpoints get_endpoint(char *request){
     // ADD ENDPOINT ROUTE FROM HERE
     if(strncmp("POST player/register", request, i)) return POST_PLAYER_REGISTER;
     if(strncmp("POST session/create", request, i)) return POST_SESSION_CREATE;
+    if(strncmp("POST session/start", request, i)) return POST_SESSION_CREATE;
     
     return INVALID_ENDPOINT;
 }
