@@ -1,18 +1,12 @@
 #include <stdio.h>
 
-#include "../../../network/client.h"
-#include "../../../network/network.h"
-#include "../../endpoints.h"
-#include "../../../db/db.h"
-#include "../../../json/cJSON.h"
+#include "register.h"
 
-char *get_from_json(cJSON *json, char *key){
-    cJSON *value = cJSON_GetObjectItemCaseSensitive(json, key);
-    if (cJSON_IsString(value) && (value->valuestring != NULL)) {
-        return value->valuestring;
-    }
-    return NULL;
-}
+#include "../../network/client.h"
+#include "../../network/network.h"
+#include "../endpoints.h"
+#include "../../db/db.h"
+#include "../../json/json.h"
 
 int post_player_register(server *s, char *request, client *cl){
     char query[1024] = {'\0'};
@@ -32,7 +26,7 @@ int post_player_register(server *s, char *request, client *cl){
     
     // TODO: Hash password
     snprintf(query, 1023, "INSERT INTO clients(pseudo, password) VALUES (%s, %s);", 
-        get_from_json(json, "pseudo"), get_from_json(json, "password"));
+        get_from_json_string(json, "pseudo"), get_from_json_string(json, "password"));
     cJSON_Delete(json);
     
 

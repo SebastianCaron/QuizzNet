@@ -6,7 +6,7 @@
 #include "endpoints.h"
 
 /* ENDPOINTS */
-#include "./player/register/register.h"
+#include "./player/register_player.h"
 
 char is_valid_char(char letter){
     return (letter >= 'A' && letter <= 'Z') || (letter >= 'a' && letter <= 'z') || letter == '/' || letter == ' ' || letter == '_';
