@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "questions_generation.h"
 
@@ -12,18 +13,20 @@ void get_questions(server *s, int size, int* tab, int nb_themes, int* ids_themes
                         "NATURAL JOIN question_in_theme "
                         "NATURAL JOIN themes t "
                         "WHERE t.id IN (";
-    itoa(ids_themes[0], number, 10);
+
+    snprintf(number, sizeof(number), "%d", ids_themes[0]);
     strcat(query, number);
 
     for (i =1; i < nb_themes; i++){
         strcat(query, ",");
-        itoa(ids_themes[i], number, 10);
+        snprintf(number, sizeof(number), "%d", ids_themes[i]);
         strcat(query, number);
     }
 
     strcat(query, ") ORDER BY RAND() LIMIT ");
-    strcat(query, itoa(size));
-
+    snprintf(number, sizeof(number), "%d", size);
+    strcat(query, number);
+    
     resquery = exec_query(s, query);
 
     for (i = 0; i < size; i++){
