@@ -27,6 +27,8 @@ int post_player_register(server *s, char *request, client *cl){
         cJSON_Delete(json);
         return 1;
     }
+
+    // TODO: Verifier que le joueur n'existe pas
     
     // TODO: Hash password
     snprintf(query, 1023, "INSERT INTO clients(pseudo, password) VALUES (%s, %s);", 
