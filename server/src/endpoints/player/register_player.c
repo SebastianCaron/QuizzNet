@@ -10,7 +10,6 @@
 
 int post_player_register(server *s, char *request, client *cl){
     char query[1024] = {'\0'};
-    char *base = "";
 
     cJSON *json = cJSON_Parse(request);
     if (json == NULL) {
@@ -37,7 +36,7 @@ int post_player_register(server *s, char *request, client *cl){
         return 1;
     }
     
-    const char *response =
+    char *response =
     "{"
     "   \"action\":\"player/register\",\n"
     "   \"statut\":\"201\",\n"
