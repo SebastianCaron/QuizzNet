@@ -1,6 +1,7 @@
 #pragma once
 #include "../network/client.h"
 #include "../network/network.h"
+#include "../utils/chained_list.h"
 
 typedef enum{
     EASY,
@@ -36,8 +37,8 @@ typedef struct {
 
 
 
-    client *players;
-    server *s;
+    chained_list *players;
+    server *server;
 } session;
 
 void *handle_session(void *session);
