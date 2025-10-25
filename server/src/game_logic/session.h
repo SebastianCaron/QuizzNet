@@ -1,8 +1,6 @@
 #pragma once
 #include "../network/client.h"
 #include "../network/network.h"
-#include "difficulty.h"
-
 
 typedef enum{
     EASY,
