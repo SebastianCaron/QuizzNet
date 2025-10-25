@@ -1,3 +1,4 @@
+#include <string.h>
 #include "create_session.h"
 #include "../../game_logic/session.h"
 #include "../endpoints.h"
@@ -49,7 +50,7 @@ int post_session_create(server* s, char* request, client *cl){
         "   \"action\":\"session/create\",\n"
         "   \"statut\":\"201\",\n"
         "   \"message\":\"session created\",\n"
-        "   \"sessionId\": %d, \n"
+        "   \"sessionId\": %d,\n"
         "   \"isCreator\": true,\n"
         "   \"jokers\":{\n"
         "      \"fifty\": 1,\n"
