@@ -14,7 +14,7 @@ difficulty get_session_difficulty(char* difficulty_str){
 void *handle_session(void *args){
     session *_session = (session *) args;
 
-
+    return NULL;
 }
 
 void session_destroy(session *s){
