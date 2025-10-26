@@ -64,68 +64,48 @@ int post_session_join(server* s, char* request, client *cl){
 
     player_size = clist_size(session_to_join->players);
 
-    if (session_to_join->type == CLASSIC){
-        retour_snp = snprintf(response,1023,"{"
+    char *session_type_str = "";
+    if(session_to_join->type == CLASSIC){
+        session_type_str = "solo";
+    }else{
+        session_type_str = "battle";
+    }
+
+    retour_snp = snprintf(response,1023,"{"
         "   \"action\":\"session/join\",\n"
         "   \"statut\":\"201\",\n"
         "   \"message\":\"session joined\",\n"
         "   \"sessionId\": %d,\n"
-        "   \"mode\":\"solo\",\n"
+        "   \"mode\":\"%s\",\n"
         "   \"isCreator\": false,\n"
-        "   \"players\": [", session_to_join->id);
+        "   \"players\": [", session_to_join->id, session_type_str);
         
+    if (retour_snp<0){
+        throw_error(ENCODING_ERROR, "Erreur snprintf join session");
+        return 1;
+    }
+
+    for (int i = 0; i<player_size; i++){
+        player = ((client *) (clist_get(session_to_join->players, i)));
+        str_tmp = player->pseudo;
+        retour_snp = snprintf(response + strlen(response), sizeof(response) - strlen(response),"\"%s\"", str_tmp);
         if (retour_snp<0){
             throw_error(ENCODING_ERROR, "Erreur snprintf join session CLASSIC");
             return 1;
         }
 
-        for (int i = 0; i<player_size; i++){
-            player = ((client *) (clist_get(session_to_join->players, i)));
-            str_tmp = player->pseudo;
-            retour_snp = snprintf(response + strlen(response), sizeof(response) - strlen(response),"\"%s\"", str_tmp);
-            if (retour_snp<0){
-                throw_error(ENCODING_ERROR, "Erreur snprintf join session CLASSIC");
-                return 1;
-            }
+        if((i+1)!=player_size) strcat(response, ",");
+        send_response(player, response_other_players);
+    }
 
-            if((i+1)!=player_size) strcat(response, ",");
-            send_response(player, response_other_players);
-        }
+    if (session_to_join->type == CLASSIC){
         strcat(response, "],\n"
         "   \"jokers\":{\n"
         "      \"fifty\": 1,\n"
         "      \"skip\": 1\n"
         "   }"
         "}");
-
     } else {
-         retour_snp = snprintf(response,1023,"{"
-        "   \"action\":\"session/join\",\n"
-        "   \"statut\":\"201\",\n"
-        "   \"message\":\"session joined\",\n"
-        "   \"sessionId\": %d,\n"
-        "   \"mode\":\"battle\",\n"
-        "   \"isCreator\": false,\n"
-        "   \"players\": [", session_to_join->id);
-        
-        if (retour_snp<0){
-            throw_error(ENCODING_ERROR, "Erreur snprintf join session BATTLE");
-            return 1;
-        }
-
-        for (int i = 0; i<player_size; i++){
-            player = ((client *) (clist_get(session_to_join->players, i)));
-            str_tmp = player->pseudo;
-            retour_snp = snprintf(response + strlen(response), sizeof(response) - strlen(response),"\"%s\"", str_tmp);
-            if (retour_snp<0){
-                throw_error(ENCODING_ERROR, "Erreur snprintf join session BATTLE");
-                return 1;
-        }
-
-            if((i+1)!=player_size) strcat(response, ",");
-            send_response(player, response_other_players);
-        }
-
         snprintf(response + strlen(response), sizeof(response) - strlen(response), "],\n"
         "   \"lives\": %d,\n"
         "   \"jokers\":{\n"
