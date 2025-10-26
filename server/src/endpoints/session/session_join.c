@@ -14,7 +14,7 @@ int post_session_join(server* s, char* request, client *cl){
     char* str_tmp;
     client* player;
     char response[1024] = {'\0'};
-    char *response_other_players;
+    char *response_other_players = {'\0'};
     cJSON *json = cJSON_Parse(request);
     if (json == NULL) {
         const char *error_ptr = cJSON_GetErrorPtr();
