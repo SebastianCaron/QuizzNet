@@ -12,3 +12,5 @@ session_type get_session_type(char* mode);
 difficulty get_session_difficulty(char* difficulty);
 
 void session_destroy(session *);
+
+session* get_session_by_id(chained_list* l_sessions, int id_session);
