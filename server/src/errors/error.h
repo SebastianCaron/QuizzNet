@@ -27,6 +27,6 @@ typedef enum {
 #define CYAN(m) "\033[01;36m"m"\033[0m"
 #define WHITE(m) "\033[01;37m"m"\033[0m"
 
-void throw_error(errors, char *);
+void throw_error(errors, const char *);
 
 void debug_log(char *);
