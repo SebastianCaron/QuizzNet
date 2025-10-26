@@ -1,5 +1,6 @@
 #pragma once
-#include "../game_logic/session.h"
+
+#include "../game_logic/session_objects.h"
 
 typedef struct {
     int score;
