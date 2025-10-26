@@ -26,6 +26,17 @@ int post_session_join(server* s, char* request, client *cl){
     }
 
     session_to_join = get_session_by_id(s->sessions, get_from_json_int(json, "sessionId"));
+    if(!session_to_join){
+        char *response_full =
+            "{"
+            "   \"action\":\"session/join\",\n"
+            "   \"statut\":\"404\",\n"
+            "   \"message\":\"session does not exists\"\n"
+            "}";
+            send_response(cl, response_full);
+            return 0;
+    }
+
     if (session_to_join->nb_players == session_to_join->max_nb_players){
             char *response_full =
             "{"
@@ -49,9 +60,7 @@ int post_session_join(server* s, char* request, client *cl){
     }
 
 
-    // TODO Ajouter au client la session auquel il est connecté
-    // NON CREATEUR. A voir si un créareur peut join sa propre session
-    // SI OUI, il faudra changer la réponse (ici creator tjrs false)
+    cl->infos_session.session = session_to_join;
 
     player_size = clist_size(session_to_join->players);
 
