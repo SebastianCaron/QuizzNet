@@ -166,3 +166,27 @@ void *clist_get(chained_list *l, int index){
     }
     return NULL;
 }
+
+int clist_remove(chained_list *l, void *data){
+    if(!l) return 0;
+
+    node *current = l->head;
+    node *prec = NULL;
+    while (current) {
+        if (current->data == data){
+            if(prec){
+                prec->next = current->next;
+                free(current);
+                l->size--;
+                return 1;
+            }
+            l->head = NULL;
+            free(current);
+            l->size--;
+            return 1;
+        }
+        prec = current;
+        current = current->next;
+    }
+    return 0;
+}

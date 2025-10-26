@@ -4,7 +4,7 @@
 
 #include "error.h"
 
-void print_msg(char *optional_msg){
+void print_msg(const char *optional_msg){
     if(optional_msg == NULL){
         printf("\n");
         return;
@@ -20,7 +20,7 @@ void debug_log(char *){
     
 }
 
-void throw_error(errors error_code, char *optional_string){
+void throw_error(errors error_code, const char *optional_string){
     print_error();
     switch (error_code)
     {

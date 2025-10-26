@@ -36,3 +36,5 @@ int clist_size(chained_list *l);
 int clist_find(chained_list *l, void *data);
 
 void *clist_get(chained_list *l, int index);
+
+int clist_remove(chained_list *l, void *data);

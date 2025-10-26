@@ -5,6 +5,7 @@ typedef enum {
     MEMORY_ALLOCATION,
     OUT_OF_RANGE,
     EMPTY_LIST,
+    NOT_FOUND,
     SOCKET,
     BIND,
     LISTEN,
@@ -13,7 +14,9 @@ typedef enum {
     DATABASE_EXEC,
     DB_QUERY,
     JSON_PARSING,
-    ENCODING_ERROR
+    ENCODING_ERROR,
+    THREAD_CREATION,
+    CLIENT_ATTACH
 } errors;
 
 #define RED(m) "\033[01;31m"m"\033[0m"
@@ -24,6 +27,6 @@ typedef enum {
 #define CYAN(m) "\033[01;36m"m"\033[0m"
 #define WHITE(m) "\033[01;37m"m"\033[0m"
 
-void throw_error(errors, char *);
+void throw_error(errors, const char *);
 
 void debug_log(char *);

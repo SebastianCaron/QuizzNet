@@ -184,3 +184,18 @@ void server_client_procedure(server *s){
         i++;
     }
 }
+
+void remove_client_from_server_procedure(server *s, client *cl){
+    if(!clist_remove(s->clients, cl)){
+        throw_error(NOT_FOUND, "Error, client not attached to server.");
+    }
+}
+
+void attach_client_to_server_procedure(server *s, client *cl){
+    if(!s) return;
+    if(!cl) return;
+    if(clist_append(s->clients, cl)){
+        throw_error(CLIENT_ATTACH, "Error, fail to attach client to server procedure");
+        client_destroy(cl);
+    }
+}
