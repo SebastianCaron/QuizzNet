@@ -35,11 +35,15 @@ mrpropre: clean
 	rm -f $(TARGET)
 	rm -rf val.txt
 	rm -f test.db
+	rm -f *.log
 
 
 fr0: mrpropre all
 	clear
 	./server 'les_12_coups' 9504
+
+start:
+	./server 'les_12_coups' 9504 -log
 
 debug: all
 	clear
