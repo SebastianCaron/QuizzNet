@@ -68,7 +68,6 @@ SqliteResult *exec_query(server *s, char *sql) {
     }
 
     sqlite3_finalize(stmt);
-    printf("%d", res->row_count);
     return res;
 }
 
