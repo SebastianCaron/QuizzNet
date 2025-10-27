@@ -1,5 +1,8 @@
 #include <string.h>
+#include <stdlib.h>
+
 #include "session.h"
+#include "../endpoints/endpoints.h"
 #include "../utils/chained_list.h"
 
 session_type get_session_type(char* mode){
@@ -14,6 +17,28 @@ difficulty get_session_difficulty(char* difficulty_str){
 
 void *handle_session(void *args){
     session *_session = (session *) args;
+    const char response[1024] = {'\0'};
+    int cooldown = SESSION_START_COOLDOWN;
+
+    snprintf(response,sizeof(response), "POST session/started\n"
+    "{"
+    "   \"message\":\"session is starting\",\n"
+    "   \"cooldown\": %d,\n"
+    "}", cooldown);
+
+    // TODO: GERER LES ERREURS
+    // TODO: GERER LES DECONNEXIONS CLIENTS
+
+    for(int i = 0; i < clist_size(_session->players); i++){
+        send_response((client *)clist_get(_session->players, i), response);
+    }
+
+    sleep(cooldown);
+
+    // BOUCLE DE JEU
+
+    // TODO: TRAITER LES REQUETES DES PLAYERS
+        //__ > TODO: CREER UN BUFFER POUR LA SESSION | PEUT ETRE REFACTOR NOTRE MANIERE DE RECUP LES REQUETES
 
     return NULL;
 }
