@@ -29,4 +29,10 @@ typedef enum {
 
 void throw_error(errors, const char *);
 
-void debug_log(char *);
+void debug_log(const char *fmt, ...);
+
+void info_log(const char *fmt, ...);
+
+int init_debug_log(void);
+
+void close_debug_log(void);

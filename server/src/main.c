@@ -7,6 +7,7 @@
 #include "network/network.h"
 #include "db/db.h"
 #include "db/initdb.h"
+#include "errors/error.h"
 
 #define UDP_PORT 5555
 
@@ -19,6 +20,11 @@ int main(int argc, char *argv[]) {
     const char *SERVER_NAME = argv[1];
     const char *PORT_TCP = argv[2];
 
+    char log_debug = argc >= 4 && !strcmp(argv[3], "-log");
+    if(log_debug){
+        init_debug_log();
+    }
+
     start_udp(SERVER_NAME, PORT_TCP);
 
     server *s = start_server(atoi(argv[2]));
@@ -27,4 +33,6 @@ int main(int argc, char *argv[]) {
     while(1){
         server_client_procedure(s);
     }
+
+    close_debug_log();
 }

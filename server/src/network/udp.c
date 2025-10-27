@@ -40,19 +40,19 @@ void* udp_thread_task(void *arg){
         return NULL;
     }
 
-    printf("[UDP] Discovery thread started on port %d\n", UDP_PORT);
+    info_log("[UDP] Discovery thread started on port %d", UDP_PORT);
 
     while (1) {
-        printf("J'ECOUTE !!!\n");
+        info_log("J'ECOUTE EN UDP!!!");
         ssize_t recv_len = recvfrom(udp_sock, buffer, sizeof(buffer) - 1, 0, (struct sockaddr *)&client_addr, &client_len);
         if (recv_len < 0) {
             perror("recvfrom");
             continue;
         }
-        printf("%ld\n", recv_len);
+        debug_log("%ld\n", recv_len);
 
         buffer[recv_len] = '\0';
-        printf("[UDP] RECEIVED : %s\n", buffer);
+        debug_log("[UDP] RECEIVED : %s\n", buffer);
 
         if (strcmp(buffer, "looking for quiznet servers") == 0) {
             char response[BUFFER_SIZE];
@@ -62,7 +62,7 @@ void* udp_thread_task(void *arg){
             if (sent < 0) {
                 perror("sendto");
             } else {
-                printf("[UDP] Responded to %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
+                info_log("[UDP] Responded to %s:%d", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
             }
         }
     }
@@ -91,7 +91,7 @@ pthread_t start_udp(const char *SERVER_NAME , const char *PORT_TCP) {
         exit(EXIT_FAILURE);
     }
 
-    printf("[MAIN] Server started. UDP discovery running in background.\n");
+    info_log("Server started. UDP discovery running in background.");
 
     return udp_thread;
 }

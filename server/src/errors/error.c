@@ -1,8 +1,90 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <stdarg.h>
+#include <time.h>
+#include <pthread.h>
 
 #include "error.h"
+
+static FILE *log_file = NULL;
+static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+typedef enum{
+    DEBUG,
+    INFO,
+    ERROR
+} print_type;
+
+int init_debug_log(void) {
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
+
+    char filename[64];
+    strftime(filename, sizeof(filename), "%Y_%m_%d_%H_%M_%S.log", t);
+    log_file = fopen(filename, "a");
+    if (!log_file) {
+        perror("fopen");
+        return -1;
+    }
+    return 0;
+}
+
+void close_debug_log(void) {
+    if (log_file) {
+        fclose(log_file);
+        log_file = NULL;
+    }
+}
+
+void print_console(print_type type){
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
+    char time_buf[32];
+    strftime(time_buf, sizeof(time_buf), "%Y-%m-%d %H:%M:%S", t);
+    switch (type)
+    {
+    case DEBUG:
+        printf(WHITE("[")YELLOW("DEBUG")WHITE("]\t[%s] "), time_buf);
+        break;
+    case ERROR:
+        printf(WHITE("[")RED("ERROR")WHITE("]\t[%s] "), time_buf);
+        break;
+    case INFO:
+        printf(WHITE("[")CYAN("INFO")WHITE("]\t[%s] "), time_buf);
+        break;
+    
+    default:
+        break;
+    }
+}
+
+void log_cf(print_type type, const char *fmt,va_list args) {
+    if (!fmt) return;
+
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
+    char time_buf[32];
+    strftime(time_buf, sizeof(time_buf), "%Y-%m-%d %H:%M:%S", t);
+    print_console(type);
+
+    va_list args_copy;
+    va_copy(args_copy, args);
+
+    vprintf(fmt, args);
+    printf("\n");
+
+    if (log_file) {
+        pthread_mutex_lock(&log_mutex);
+        fprintf(log_file, "[%s] ", time_buf);
+        vfprintf(log_file, fmt, args_copy);
+        fprintf(log_file, "\n");
+        fflush(log_file);
+        pthread_mutex_unlock(&log_mutex);
+    }
+
+    va_end(args_copy);
+}
 
 void print_msg(const char *optional_msg){
     if(optional_msg == NULL){
@@ -12,26 +94,107 @@ void print_msg(const char *optional_msg){
     printf(YELLOW("%s\n"), optional_msg);
 }
 
-void print_error(){
-    printf(WHITE("[")RED("ERROR")WHITE("] "));
+
+
+void debug_log(const char *fmt, ...) {
+    if (!fmt) return;
+
+    va_list args;
+    va_start(args, fmt);
+    log_cf(DEBUG, fmt, args);
+    va_end(args);
 }
 
-void debug_log(char *){
-    
+void info_log(const char *fmt, ...) {
+    if (!fmt) return;
+    va_list args;
+    va_start(args, fmt);
+    log_cf(INFO, fmt, args);
+    va_end(args);
 }
+
+void error_log(const char *fmt, ...) {
+    if (!fmt) return;
+    va_list args;
+    va_start(args, fmt);
+    log_cf(ERROR, fmt, args);
+    va_end(args);
+}
+
+
 
 void throw_error(errors error_code, const char *optional_string){
-    print_error();
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
+    char time_buf[32];
+    strftime(time_buf, sizeof(time_buf), "%Y-%m-%d %H:%M:%S", t);
+    print_console(ERROR);
+    char *_to_write;
     switch (error_code)
     {
     case MEMORY_ALLOCATION:
-        printf("memory allocation. ");
+        _to_write = "MEMORY_ALLOCATION. ";
         break;
-    
+    case NULL_VARIABLE:
+        _to_write = "NULL_VARIABLE. ";
+        break;
+    case OUT_OF_RANGE:
+        _to_write = "OUT_OF_RANGE. ";
+        break;
+    case EMPTY_LIST:
+        _to_write = "EMPTY_LIST. ";
+        break;
+    case NOT_FOUND:
+        _to_write = "NOT_FOUND. ";
+        break;
+    case SOCKET:
+        _to_write = "SOCKET. ";
+        break;
+    case BIND:
+        _to_write = "BIND. ";
+        break;
+    case LISTEN:
+        _to_write = "LISTEN. ";
+        break;
+    case DATABASE:
+        _to_write = "DATABASE. ";
+        break;
+    case DATABASE_PREPARE:
+        _to_write = "DATABASE_PREPARE. ";
+        break;
+    case DATABASE_EXEC:
+        _to_write = "DATABASE_EXEC. ";
+        break;
+    case DB_QUERY:
+        _to_write = "DB_QUERY. ";
+        break;
+    case JSON_PARSING:
+        _to_write = "JSON_PARSING. ";
+        break;
+    case ENCODING_ERROR:
+        _to_write = "ENCODING_ERROR. ";
+        break;
+    case THREAD_CREATION:
+        _to_write = "THREAD_CREATION. ";
+        break;
+    case CLIENT_ATTACH:
+        _to_write = "CLIENT_ATTACH. ";
+        break;
+
     default:
+        _to_write = "";
         break;
     }
-
+    printf("%s", _to_write);
     print_msg(optional_string);
+    
+    if (log_file) {
+        pthread_mutex_lock(&log_mutex);
+        fprintf(log_file, "[%s] ", time_buf);
+        fprintf(log_file, "%s %s\n", _to_write, optional_string ? optional_string : "");
+        fflush(log_file);
+        pthread_mutex_unlock(&log_mutex);
+    }
+
 }
 

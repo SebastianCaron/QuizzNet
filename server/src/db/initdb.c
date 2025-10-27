@@ -67,9 +67,10 @@ void init_table_theme_quest(server *s){
 }
 
 void init_db(server *s){
-    printf("HAJGDZJ?AH\n");
+    debug_log("INITIALISATION DE LA DB.");
     init_table_theme(s);
     init_table_clients(s);
     init_table_questions(s);
     init_table_theme_quest(s);
+    debug_log("DB OK!");
 }
