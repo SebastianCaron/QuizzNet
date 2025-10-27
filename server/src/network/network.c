@@ -80,7 +80,7 @@ server *start_server(int port){
 
     set_nonblocking(res->server_fd_tcp);
 
-    printf("[TCP] Listening on port %d\n", port);
+    info_log("[TCP] Listening on port %d", port);
 
     return res;
 }
@@ -94,7 +94,7 @@ void accept_new_connection(server *s){
         set_nonblocking(client_fd);
 
         if (clist_size(s->clients) == MAX_CLIENTS) {
-            printf("[TCP] Too many clients, refusing %s\n", inet_ntoa(client_addr.sin_addr));
+            info_log("[TCP] Too many clients, refusing %s", inet_ntoa(client_addr.sin_addr));
             close(client_fd);
         } else {
             client *nc = client_init(client_fd);
@@ -103,7 +103,7 @@ void accept_new_connection(server *s){
                 return;
             }
             clist_append(s->clients, nc);
-            printf("[TCP] Client connected: %s:%d (fd=%d)\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port), client_fd);
+            info_log("[TCP] Client connected: %s:%d (fd=%d)", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port), client_fd);
         }
     }
 }
@@ -148,7 +148,7 @@ int receive_from(server *s, int i) {
         }
 
         if (bytes == 0) {
-            printf("[TCP] Client %d closed connection.\n", i);
+            info_log("[TCP] Client %d closed connection.", i);
             return -1;
         }
 
@@ -163,7 +163,7 @@ int receive_from(server *s, int i) {
     if (s->current_size < s->size_buffer)
         s->buffer[s->current_size] = '\0';
 
-    // printf("[TCP] Reçu %zd octets du client fd=%d\n", s->current_size, fd);
+    // info_log("[TCP] Reçu %zd octets du client fd=%d", s->current_size, fd);
     return s->current_size;
 }
 

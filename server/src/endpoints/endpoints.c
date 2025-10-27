@@ -57,7 +57,7 @@ void send_response(client *cl, char *response){
 
 void handle_request(server *s, char *request, client *cl){
     endpoints ep = get_endpoint(request);
-    printf("ENDPOINTS: %d\n", ep);
+    debug_log("ENDPOINTS: %d\n", ep);
     // HANDLE ROUTE HERE
     switch (ep)
     {
