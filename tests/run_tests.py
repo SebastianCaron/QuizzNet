@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 Script de lancement des tests pour QuizNet
+export PYTHONPATH=$PYTHONPATH:`pwd`
 """
 
 import subprocess
