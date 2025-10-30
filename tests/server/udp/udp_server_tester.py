@@ -15,7 +15,7 @@ from typing import Optional, Tuple
 
 class UDPServerTester:    
     def __init__(self, server_path: str = "./server", server_name: str = "test_server", tcp_port: str = "9504"):
-        self.server_path = server_path
+        self.server_path = server_path.rstrip('/')
         self.server_name = server_name
         self.tcp_port = tcp_port
         self.server_process: Optional[subprocess.Popen] = None
@@ -25,16 +25,22 @@ class UDPServerTester:
     
     def start_server(self) -> bool:
         try:
-            if not os.path.exists(self.server_path):
+            server_binary = os.path.join(self.server_path, "server")
+            
+            if not os.path.exists(server_binary):
                 print(f"Compilation du serveur...")
-                result = subprocess.run(["make", "all"], cwd="./server", capture_output=True, text=True)
+                result = subprocess.run(["make", "all"], cwd=f"{self.server_path}", capture_output=True, text=True)
                 if result.returncode != 0:
                     print(f"Erreur de compilation: {result.stderr}")
                     return False
             
+            if not os.path.exists(server_binary):
+                print(f"Erreur: le binaire {server_binary} n'existe pas après compilation")
+                return False
+            
             self.server_process = subprocess.Popen(
-                [self.server_path, self.server_name, self.tcp_port],
-                cwd="./server",
+                ['./server', self.server_name, self.tcp_port],
+                cwd=self.server_path,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 preexec_fn=os.setsid
