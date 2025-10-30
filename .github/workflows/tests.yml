@@ -1,0 +1,28 @@
+name: Tests unitaires
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout du code
+      uses: actions/checkout@v4
+      
+    - name: Configuration de Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+        
+    - name: Installation des dépendances
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential gcc make
+        
+    - name: Lancement des tests
+      run: |
+        python3 tests/run_tests.py
+
