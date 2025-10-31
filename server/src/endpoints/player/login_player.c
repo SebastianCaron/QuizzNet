@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "login_player.h"
 
@@ -27,6 +28,13 @@ int post_player_login(server *s, char *request, client *cl){
 
     SqliteResult *res = exec_query(s, query);
     if(!res){
+        throw_error(DB_QUERY, "Erreur post_player_login");
+        send_error_response(cl);
+        cJSON_Delete(json);
+        return 1;
+    }
+
+    if(!res){
         char *response =
         "{"
         "   \"action\":\"player/login\",\n"
@@ -34,7 +42,7 @@ int post_player_login(server *s, char *request, client *cl){
         "   \"message\":\"invalid credentials : Unknown Pseudo\"\n"
         "}";
         throw_error(DB_QUERY, "Erreur pseudo post_player_login");
-        send_esponse(cl, response);
+        send_response(cl, response);
         cJSON_Delete(json);
         return 1;
     }
@@ -47,7 +55,7 @@ int post_player_login(server *s, char *request, client *cl){
         "   \"message\":\"invalid credentials : Wrong Password\"\n"
         "}";
         throw_error(DB_QUERY, "Erreur password post_player_login");
-        send_esponse(cl, response);
+        send_response(cl, response);
         cJSON_Delete(json);
         return 1;
     }
