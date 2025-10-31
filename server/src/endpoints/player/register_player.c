@@ -10,6 +10,7 @@
 
 int post_player_register(server *s, char *request, client *cl){
     char query[1024] = {'\0'};
+    char query_pseudo[1024] = {'\0'};
 
     cJSON *json = cJSON_Parse(request);
     if (json == NULL) {
@@ -21,7 +22,28 @@ int post_player_register(server *s, char *request, client *cl){
         return 1;
     }
 
-    // TODO: Verifier que le joueur n'existe pas
+    snprintf(query_pseudo, 1023, "SELECT c.peudo FROM clients c WHERE c.pseudo = %s",
+    get_from_json_string(json, "pseudo"));
+
+    SqliteResult *res_pseudo = exec_query(s, query_pseudo);
+    if(!res_pseudo){
+        throw_error(DB_QUERY, "Erreur post_player_register");
+        send_error_response(cl);
+        cJSON_Delete(json);
+        return 1;
+    }
+
+    if (res_pseudo->row_count != 0){
+        char *response =
+        "{"
+        "   \"action\":\"player/register\",\n"
+        "   \"statut\":\"409\",\n"
+        "   \"message\":\"pseudo already exists\"\n"
+        "}";
+        send_response(cl, response);
+        cJSON_Delete(json);
+        return 1;
+    }
     
     // TODO: Hash password
     snprintf(query, 1023, "INSERT INTO clients(pseudo, password) VALUES (%s, %s);", 
