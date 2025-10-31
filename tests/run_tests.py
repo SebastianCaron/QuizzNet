@@ -8,20 +8,27 @@ import subprocess
 import sys
 import os
 
+from tests.server.utils.server import ServerMaker
 from tests.server.udp.udp_server_tester import run_all_udp_tests
 
 
 def run_tests():
     print("=== Lancement des tests QuizNet ===")
     
+    server = ServerMaker()
+    print("\n--- Lancement du server ---")
+    server.start_server()
     print("\n🧪 Lancement des tests...")
     try:
         # Tests UDP
         print("\n--- Tests UDP ---")
-        result_udp = run_all_udp_tests()
+        result_udp = run_all_udp_tests(server)
 
         # Tests TCP
         
+        print("\n--- Arret du server ---")
+        server.stop_server()
+
         print(f"\n=== Résumé ===")
         print(f"Tests UDP: {'✅ Réussis' if result_udp else '❌ Échoués'}")
         
