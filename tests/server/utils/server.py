@@ -5,7 +5,7 @@ import signal
 from typing import Optional
 
 class ServerMaker:    
-    def __init__(self, server_path: str = "./server", server_name: str = "test_server", tcp_port: str = "9504"):
+    def __init__(self, server_path: str = "./server", server_name: str = "les_12_coups", tcp_port: str = "9504"):
         self.server_path = server_path.rstrip('/')
         self.server_name = server_name
         self.tcp_port = tcp_port
