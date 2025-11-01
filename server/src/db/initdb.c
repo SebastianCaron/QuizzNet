@@ -6,7 +6,7 @@ void init_table_theme(server *s){
     SqliteResult *result = exec_query(s, 
         "CREATE TABLE IF NOT EXISTS themes"
         "("
-            "id INT PRIMARY KEY NOT NULL,"
+            "id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "name VARCHAR(100) NOT NULL"
         ")"
     );
@@ -21,7 +21,7 @@ void init_table_clients(server *s){
     SqliteResult *result = exec_query(s, 
         "CREATE TABLE IF NOT EXISTS clients"
         "("
-            "id INT PRIMARY KEY NOT NULL,"
+            "id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "pseudo VARCHAR(100) NOT NULL,"
             "password VARCHAR(255) NOT NULL"
         ")"
@@ -38,7 +38,7 @@ void init_table_questions(server *s){
     SqliteResult *result = exec_query(s,
         "CREATE TABLE IF NOT EXISTS questions"
         "("
-            "id INT PRIMARY KEY NOT NULL,"
+            "id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "difficulty INT NOT NULL,"
             "type INT NOT NULL,"
             "statement VARCHAR(500),"
