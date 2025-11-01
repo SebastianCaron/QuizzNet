@@ -24,9 +24,9 @@ endpoints get_endpoint(char *request){
     }
     i--;
     // ADD ENDPOINT ROUTE FROM HERE
-    if(strncmp("POST player/register", request, i)) return POST_PLAYER_REGISTER;
-    if(strncmp("POST session/create", request, i)) return POST_SESSION_CREATE;
-    if(strncmp("POST session/start", request, i)) return POST_SESSION_CREATE;
+    if(!strncmp("POST player/register", request, i)) return POST_PLAYER_REGISTER;
+    if(!strncmp("POST session/create", request, i)) return POST_SESSION_CREATE;
+    if(!strncmp("POST session/start", request, i)) return POST_SESSION_CREATE;
     
     return INVALID_ENDPOINT;
 }
