@@ -175,7 +175,8 @@ void server_client_procedure(server *s){
     while(i < clist_size(s->clients)){
         resp = receive_from(s, i);
         if(resp == -1){
-            clist_pop(s->clients, i);
+            client *cl = clist_pop(s->clients, i);
+            client_destroy(cl);
             continue;
         }
         if(resp > 0){
