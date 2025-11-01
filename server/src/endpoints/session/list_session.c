@@ -65,9 +65,11 @@ int get_session_list(server* s, char* request, client *cl){
         return 1;
     }
 
+    int size = 0;
+    int needed = 0;
     if(nb_session > 0){
-        int size = strlen(response);
-        int needed = size + 50;
+        size = strlen(response);
+        needed = size + 50;
         if (ensure_buffer_size(&response, &buffer_size, needed) != 0) {
             free(response);
             return 1;
@@ -84,7 +86,7 @@ int get_session_list(server* s, char* request, client *cl){
             session *sess = (session *)clist_get(s->sessions, i);
             if (!sess) continue;
             
-            int size = strlen(response);
+            size = strlen(response);
             char session_json[4096] = {'\0'};
             
             retour_snp = snprintf(session_json, sizeof(session_json), "{\n"
@@ -197,8 +199,8 @@ int get_session_list(server* s, char* request, client *cl){
             }
         }
         
-        int size = strlen(response);
-        int needed = size + 50;
+        size = strlen(response);
+        needed = size + 50;
         if (ensure_buffer_size(&response, &buffer_size, needed) != 0) {
             free(response);
             return 1;
@@ -212,8 +214,8 @@ int get_session_list(server* s, char* request, client *cl){
         }
     }
     
-    int size = strlen(response);
-    int needed = size + 10;
+    size = strlen(response);
+    needed = size + 10;
     if (ensure_buffer_size(&response, &buffer_size, needed) != 0) {
         free(response);
         return 1;
