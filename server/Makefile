@@ -38,7 +38,6 @@ mrpropre: clean
 	rm -f *.log
 
 aspi:
-	clear
 	rm -f val.txt
 	rm -f test.db
 	rm -f *.log
@@ -48,7 +47,7 @@ fr0: mrpropre all
 	clear
 	./server 'les_12_coups' 9504
 
-start:
+start: all aspi
 	./server 'les_12_coups' 9504 -log
 
 debug: all

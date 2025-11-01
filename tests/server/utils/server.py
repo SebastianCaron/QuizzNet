@@ -16,12 +16,11 @@ class ServerMaker:
         try:
             server_binary = os.path.join(self.server_path, "server")
             
-            if not os.path.exists(server_binary):
-                print(f"Compilation du serveur...")
-                result = subprocess.run(["make", "all"], cwd=f"{self.server_path}", capture_output=True, text=True)
-                if result.returncode != 0:
-                    print(f"Erreur de compilation: {result.stderr}")
-                    return False
+            print(f"Compilation du serveur...")
+            result = subprocess.run(["make", "aspi", "all"], cwd=f"{self.server_path}", capture_output=True, text=True)
+            if result.returncode != 0:
+                print(f"Erreur de compilation: {result.stderr}")
+                return False
             
             if not os.path.exists(server_binary):
                 print(f"Erreur: le binaire {server_binary} n'existe pas après compilation")
