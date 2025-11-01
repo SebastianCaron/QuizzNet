@@ -48,7 +48,7 @@ fr0: mrpropre all
 	clear
 	./server 'les_12_coups' 9504
 
-start:
+start: all aspi
 	./server 'les_12_coups' 9504 -log
 
 debug: all
