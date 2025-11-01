@@ -11,6 +11,8 @@
 int post_player_register(server *s, char *request, client *cl){
     char query[1024] = {'\0'};
 
+    while(request && (request[0] != '{' || request[0] != '\0')) request += 1;
+
     cJSON *json = cJSON_Parse(request);
     if (json == NULL) {
         const char *error_ptr = cJSON_GetErrorPtr();
