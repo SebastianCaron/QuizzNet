@@ -4,10 +4,8 @@ from tests.server.tcp.tcp_base import TCPServerTester
 
 
 class PlayerRegisterTester(TCPServerTester):
-    """Tests pour l'endpoint player/register"""
     
     def test_player_register_success(self) -> bool:
-        """Test d'enregistrement de joueur avec succès (201)"""
         request = """POST player/register
 {
     "pseudo":"Player1",
@@ -43,7 +41,6 @@ class PlayerRegisterTester(TCPServerTester):
             return False
     
     def test_player_register_duplicate(self) -> bool:
-        """Test d'enregistrement avec pseudo déjà pris (409)"""
         first_request = """POST player/register
 {
     "pseudo":"Player2",

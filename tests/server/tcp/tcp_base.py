@@ -10,7 +10,6 @@ class TCPServerTester:
         self.server = server_class
     
     def send_tcp_request(self, request: str, timeout: float = 5.0) -> Tuple[bool, str]:
-        """Envoie une requête TCP au serveur et retourne la réponse"""
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(timeout)

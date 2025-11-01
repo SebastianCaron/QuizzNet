@@ -4,10 +4,8 @@ from tests.server.tcp.tcp_base import TCPServerTester
 
 
 class PlayerLoginTester(TCPServerTester):
-    """Tests pour l'endpoint player/login"""
     
     def test_player_login_success(self) -> bool:
-        """Test de connexion de joueur avec succès (200)"""
         register_request = """POST player/register
 {
     "pseudo":"LoginPlayer1",
@@ -57,7 +55,6 @@ class PlayerLoginTester(TCPServerTester):
             return False
     
     def test_player_login_invalid_credentials(self) -> bool:
-        """Test de connexion avec mauvais identifiants (401)"""
         login_request = """POST player/login
 {
     "pseudo":"NonexistentPlayer",

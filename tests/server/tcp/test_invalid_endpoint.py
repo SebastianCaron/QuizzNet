@@ -3,10 +3,7 @@ from tests.server.tcp.tcp_base import TCPServerTester
 
 
 class InvalidEndpointTester(TCPServerTester):
-    """Tests pour les endpoints invalides"""
-    
     def test_invalid_endpoint(self) -> bool:
-        """Test d'endpoint inexistant (400)"""
         request = """POST player/nonexistent
 {
     "pseudo":"Player1",
