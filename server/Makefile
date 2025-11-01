@@ -38,7 +38,6 @@ mrpropre: clean
 	rm -f *.log
 
 aspi:
-	clear
 	rm -f val.txt
 	rm -f test.db
 	rm -f *.log
