@@ -3,5 +3,22 @@
 > Lina LETHOOR & Sebastian CARON
 
 
-netcat -u 127.0.0.1 5555 < hello.txt
-netcat -u 127.0.0.1 5555 < hello_bad.txt
+## Lancer les tests unitaires
+
+```bash
+export PYTHONPATH=$PYTHONPATH:`pwd`
+```
+
+### Lancer des tests en local (le server doit être lancé)
+
+```bash
+python3 ./tests/run_tests.py --local
+```
+
+### Lancer des tests de A à Z (comme sur l'action github)
+
+> ie: va effectuer la compilation, le lancement et l'arret.
+
+```bash
+python3 ./tests/run_tests.py
+```

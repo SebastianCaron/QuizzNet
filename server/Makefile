@@ -37,6 +37,12 @@ mrpropre: clean
 	rm -f test.db
 	rm -f *.log
 
+aspi:
+	clear
+	rm -f val.txt
+	rm -f test.db
+	rm -f *.log
+
 
 fr0: mrpropre all
 	clear
