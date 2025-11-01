@@ -168,7 +168,7 @@ def run_all_tcp_tests(server_class: ServerMaker):
         print("❌ Test d'enregistrement échoué")
     
     print("\n2. Test d'enregistrement avec pseudo déjà pris (409)...")
-    if True or tester.test_player_register_duplicate():
+    if tester.test_player_register_duplicate():
         print("✅ Test de duplication réussi")
         tests_passed += 1
     else:
