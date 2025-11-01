@@ -182,5 +182,5 @@ def run_all_tcp_tests(server_class: ServerMaker):
         print("❌ Test d'endpoint invalide échoué")
     
     print(f"\n=== Résultats: {tests_passed}/{total_tests} tests réussis ===")
-    return tests_passed == total_tests
+    return tests_passed >= total_tests
 
