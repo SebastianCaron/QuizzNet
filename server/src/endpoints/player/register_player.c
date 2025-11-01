@@ -32,13 +32,35 @@ int post_player_register(server *s, char *request, client *cl){
         return 1;
     }
     
-    snprintf(query, 1023, "INSERT INTO clients(pseudo, password) VALUES ('%s', '%s');", 
-        pseudo, password);
-    // TODO: Verifier que le joueur n'existe pas
+    // Vérifier que le joueur n'existe pas déjà
+    snprintf(query, 1023, "SELECT id FROM clients WHERE pseudo = '%s';", pseudo);
+    SqliteResult *check_res = exec_query(s, query);
+    if(!check_res){
+        throw_error(DB_QUERY, "Erreur lors de la vérification du joueur");
+        cJSON_Delete(json);
+        send_error_response(cl);
+        return 1;
+    }
+    
+    if(check_res->row_count > 0){
+        char *response =
+        "{"
+        "   \"action\":\"player/register\",\n"
+        "   \"statut\":\"409\",\n"
+        "   \"message\":\"pseudo already exists\"\n"
+        "}";
+        sqlite_result_destroy(check_res);
+        cJSON_Delete(json);
+        send_response(cl, response);
+        return 1;
+    }
+    
+    sqlite_result_destroy(check_res);
     
     // TODO: Hash password
 
-    
+    snprintf(query, 1023, "INSERT INTO clients(pseudo, password) VALUES ('%s', '%s');", 
+        pseudo, password);
     SqliteResult *res = exec_query(s, query);
     if(!res){
         throw_error(DB_QUERY, "Erreur post_player_register");
@@ -46,6 +68,7 @@ int post_player_register(server *s, char *request, client *cl){
         return 1;
     }
     cJSON_Delete(json);
+    sqlite_result_destroy(res);
 
     char *response =
     "{"
