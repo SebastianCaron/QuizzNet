@@ -7,7 +7,8 @@ typedef enum {
     INVALID_ENDPOINT,
     POST_PLAYER_REGISTER,
     POST_SESSION_CREATE,
-    POST_SESSION_START
+    POST_SESSION_START,
+    GET_SESSION_LIST
 } endpoints;
 
 void handle_request(server *s, char *request, client *cl);
