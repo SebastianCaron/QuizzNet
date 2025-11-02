@@ -59,7 +59,7 @@ void send_response(client *cl, char *response){
 
 void handle_request(server *s, char *request, client *cl){
     endpoints ep = get_endpoint(request);
-    debug_log("ENDPOINTS: %d\n", ep);
+    debug_log("ENDPOINTS: %d", ep);
     // HANDLE ROUTE HERE
     switch (ep)
     {
@@ -68,6 +68,7 @@ void handle_request(server *s, char *request, client *cl){
         break;
     case POST_PLAYER_LOGIN:
         post_player_login(s, request, cl);
+        break;
     case POST_SESSION_CREATE:
         post_session_create(s, request, cl);
         break;
