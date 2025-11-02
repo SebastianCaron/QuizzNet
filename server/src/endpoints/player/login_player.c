@@ -20,12 +20,12 @@ int post_player_login(server *s, char *request, client *cl){
             throw_error(JSON_PARSING, error_ptr);
         }
         cJSON_Delete(json);
+        send_error_response(cl);
         return 1;
     }
     
     char *pseudo = get_from_json_string(json, "pseudo");
     char *password = get_from_json_string(json, "password");
-    cJSON_Delete(json);
 
     if (!pseudo || !password) {
         throw_error(JSON_PARSING, "pseudo or password missing");
@@ -34,7 +34,7 @@ int post_player_login(server *s, char *request, client *cl){
     }
 
     // TODO: Hash password
-    snprintf(query, 1023, "SELECT c.password FROM clients c WHERE c.pseudo = '%s';", 
+    snprintf(query, 1023, "SELECT password FROM clients WHERE pseudo = '%s';", 
        pseudo);
 
     SqliteResult *res = exec_query(s, query);
@@ -45,26 +45,34 @@ int post_player_login(server *s, char *request, client *cl){
     }
 
     if(res->row_count == 0){
+        sqlite_result_destroy(res);
         char *response =
         "{"
         "   \"action\":\"player/login\",\n"
         "   \"statut\":\"401\",\n"
         "   \"message\":\"invalid credentials\"\n"
         "}";
+        cJSON_Delete(json);
+        sqlite_result_destroy(res);
         send_response(cl, response);
         return 1;
     }
 
     if(strcmp(res->rows[0][0], password)){
+        sqlite_result_destroy(res);
         char *response =
         "{"
         "   \"action\":\"player/login\",\n"
         "   \"statut\":\"401\",\n"
         "   \"message\":\"invalid credentials\"\n"
         "}";
+        cJSON_Delete(json);
         send_response(cl, response);
         return 1;
     }
+    
+    sqlite_result_destroy(res);
+    cJSON_Delete(json);
     
     char *response =
     "{"
