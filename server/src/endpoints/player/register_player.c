@@ -10,8 +10,6 @@
 
 int post_player_register(server *s, char *request, client *cl){
     char query[1024] = {'\0'};
-    char query_pseudo[1024] = {'\0'};
-    char query_pseudo[1024] = {'\0'};
 
     while(request && (request[0] != '{' && request[0] != '\0')) request++;
     cJSON *json = cJSON_Parse(request);
