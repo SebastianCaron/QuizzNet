@@ -12,6 +12,7 @@
 int post_player_login(server *s, char *request, client *cl){
     char query[1024] = {'\0'};
 
+    while(request && (request[0] != '{' && request[0] != '\0')) request++;
     cJSON *json = cJSON_Parse(request);
     if (json == NULL) {
         const char *error_ptr = cJSON_GetErrorPtr();
@@ -21,42 +22,47 @@ int post_player_login(server *s, char *request, client *cl){
         cJSON_Delete(json);
         return 1;
     }
+    
+    char *pseudo = get_from_json_string(json, "pseudo");
+    char *password = get_from_json_string(json, "password");
+    cJSON_Delete(json);
+
+    if (!pseudo || !password) {
+        throw_error(JSON_PARSING, "pseudo or password missing");
+        send_error_response(cl);
+        return 1;
+    }
 
     // TODO: Hash password
-    snprintf(query, 1023, "SELECT c.password FROM clients c WHERE c.pseudo = %s;", 
-        get_from_json_string(json, "pseudo"));
+    snprintf(query, 1023, "SELECT c.password FROM clients c WHERE c.pseudo = '%s';", 
+       pseudo);
 
     SqliteResult *res = exec_query(s, query);
     if(!res){
         throw_error(DB_QUERY, "Erreur post_player_login");
         send_error_response(cl);
-        cJSON_Delete(json);
         return 1;
     }
 
-    if(!res){
+    if(res->row_count == 0){
         char *response =
         "{"
         "   \"action\":\"player/login\",\n"
         "   \"statut\":\"401\",\n"
-        "   \"message\":\"invalid credentials : Unknown Pseudo\"\n"
+        "   \"message\":\"invalid credentials\"\n"
         "}";
-        throw_error(DB_QUERY, "Erreur pseudo post_player_login");
         send_response(cl, response);
-        cJSON_Delete(json);
         return 1;
     }
 
-    if(strcmp(res->rows[0][0], get_from_json_string(json, "password"))){
+    if(strcmp(res->rows[0][0], password)){
         char *response =
         "{"
         "   \"action\":\"player/login\",\n"
         "   \"statut\":\"401\",\n"
-        "   \"message\":\"invalid credentials : Wrong Password\"\n"
+        "   \"message\":\"invalid credentials\"\n"
         "}";
-        throw_error(DB_QUERY, "Erreur password post_player_login");
         send_response(cl, response);
-        cJSON_Delete(json);
         return 1;
     }
     
@@ -67,6 +73,5 @@ int post_player_login(server *s, char *request, client *cl){
     "   \"message\":\"login successful\"\n"
     "}";
     send_response(cl, response);
-    cJSON_Delete(json);
     return 0;
 }

@@ -6,6 +6,7 @@
 typedef enum {
     INVALID_ENDPOINT,
     POST_PLAYER_REGISTER,
+    POST_PLAYER_LOGIN,
     POST_SESSION_CREATE,
     POST_SESSION_START
 } endpoints;
