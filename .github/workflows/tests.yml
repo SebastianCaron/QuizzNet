@@ -20,5 +20,5 @@ jobs:
     - name: Lancement des tests
       run: |
         export PYTHONPATH="${PYTHONPATH}:${GITHUB_WORKSPACE}"
-        python3 tests/run_tests.py -udp -register
+        python3 tests/run_tests.py -udp -register -invalid_ep -login
 
