@@ -19,7 +19,6 @@ int post_player_login(server *s, char *request, client *cl){
         if (error_ptr != NULL) {
             throw_error(JSON_PARSING, error_ptr);
         }
-        cJSON_Delete(json);
         send_error_response(cl);
         return 1;
     }
@@ -40,12 +39,12 @@ int post_player_login(server *s, char *request, client *cl){
     SqliteResult *res = exec_query(s, query);
     if(!res){
         throw_error(DB_QUERY, "Erreur post_player_login");
+        cJSON_Delete(json);
         send_error_response(cl);
         return 1;
     }
 
     if(res->row_count == 0){
-        sqlite_result_destroy(res);
         char *response =
         "{"
         "   \"action\":\"player/login\",\n"
@@ -59,7 +58,6 @@ int post_player_login(server *s, char *request, client *cl){
     }
 
     if(strcmp(res->rows[0][0], password)){
-        sqlite_result_destroy(res);
         char *response =
         "{"
         "   \"action\":\"player/login\",\n"
@@ -68,6 +66,7 @@ int post_player_login(server *s, char *request, client *cl){
         "}";
         cJSON_Delete(json);
         send_response(cl, response);
+        sqlite_result_destroy(res);
         return 1;
     }
     
