@@ -43,7 +43,6 @@ void* udp_thread_task(void *arg){
     info_log("[UDP] Discovery thread started on port %d", UDP_PORT);
 
     while (1) {
-        info_log("J'ECOUTE EN UDP!!!");
         ssize_t recv_len = recvfrom(udp_sock, buffer, sizeof(buffer) - 1, 0, (struct sockaddr *)&client_addr, &client_len);
         if (recv_len < 0) {
             perror("recvfrom");
