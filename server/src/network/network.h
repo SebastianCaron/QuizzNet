@@ -6,6 +6,7 @@
 #include "server.h"
 #include "client.h"
 
+int receive_from(int fd, char **buffer, ssize_t *size, int *capacity);
 
 server *start_server(int port);
 

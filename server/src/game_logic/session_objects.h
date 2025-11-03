@@ -36,6 +36,10 @@ typedef struct {
     int max_nb_players;
     session_status status;
 
+    char *buffer;
+    int buffer_capacity;
+    ssize_t buffer_size;
+
     chained_list *players;
     server *server;
 } session;

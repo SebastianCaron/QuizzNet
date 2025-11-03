@@ -63,11 +63,36 @@ void *handle_session(void *args){
     sleep(cooldown);
 
     // BOUCLE DE JEU
+    // TABLEAU DE BOOL JOUEUR A REPONDU ? []
+    // POUR LE NOMRE DE QUESTION DU SET 
+        // ENVOYER LA QUESTION A TOUS LES JOUEURS
+        // TANT QUIL RESTE DU TEMPS OU QUIL RESTE DES GENS QUI NONT PAS REPS : 
+            // RECUPERER REQUETES/REPONSES DES JOUEURS => HANDLE
+        // AFFICHER RESULTATS DE LA QUESTION
 
-    // TODO: TRAITER LES REQUETES DES PLAYERS
-        //__ > TODO: CREER UN BUFFER POUR LA SESSION | PEUT ETRE REFACTOR NOTRE MANIERE DE RECUP LES REQUETES
+        // POTENTIELLEMENT ELIMINER LES JOUEURS
+    
+    // AFFICHER SESSION FINISHED
+
+
+    // REATACHER LES CLIENTS AU PROCESS PRINCIPAL
+
+    // DETRUIRE SESSION
 
     return NULL;
+}
+
+void session_receive_for_player(session *s, int i){
+
+    client *p = clist_get(s->players, i);
+    if(!p) return;
+    int res = receive_from(p->fd, &s->buffer, &s->buffer_size, &s->buffer_capacity);
+
+    if(res == -2){
+        // Gerer erreur
+    }
+
+    // handle_request_session(s, s->buffer, p);
 }
 
 void session_destroy(session *s){
