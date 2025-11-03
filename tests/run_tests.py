@@ -15,7 +15,8 @@ from tests.server.tcp.tcp_server_tester import (
     run_all_tcp_tests,
     run_register_tests,
     run_login_tests,
-    run_invalid_endpoint_tests
+    run_invalid_endpoint_tests,
+    run_themes_list_tests
 )
 
 
@@ -23,7 +24,8 @@ def run_tests(local_mode: bool = False,
               udp: bool = False,
               register: bool = False,
               login: bool = False,
-              invalid_ep: bool = False):
+              invalid_ep: bool = False,
+              themes: bool = False):
     print("=== Lancement des tests QuizNet ===")
     
     run_all = not (udp or register or login or invalid_ep)
@@ -56,6 +58,7 @@ def run_tests(local_mode: bool = False,
             results['register'] = None
             results['login'] = None
             results['invalid_ep'] = None
+            results['themes'] = None
         else:
             results['tcp_all'] = None
             
@@ -76,6 +79,12 @@ def run_tests(local_mode: bool = False,
                 results['invalid_ep'] = run_invalid_endpoint_tests(server)
             else:
                 results['invalid_ep'] = None
+            
+            if themes:
+                print("\n--- Tests d'endpoints themes ---")
+                results['themes'] = run_themes_list_tests(server)
+            else:
+                results['themes'] = None
         
         if not local_mode:
             print("\n--- Arret du server ---")
@@ -90,8 +99,11 @@ def run_tests(local_mode: bool = False,
             print(f"Tests de connexion: {'✅ Réussis' if results['login'] else '❌ Échoués'}")
         if results['invalid_ep'] is not None:
             print(f"Tests d'endpoints invalides: {'✅ Réussis' if results['invalid_ep'] else '❌ Échoués'}")
+        if results['themes'] is not None:
+            print(f"Tests d'endpoint themes: {'✅ Réussis' if results['themes'] else '❌ Échoués'}")
         if results['tcp_all'] is not None:
             print(f"Tests TCP (tous): {'✅ Réussis' if results['tcp_all'] else '❌ Échoués'}")
+            
         
         all_success = True
         for key, value in results.items():
@@ -118,6 +130,8 @@ def main():
                         help='Lancer uniquement les tests de connexion de joueur')
     parser.add_argument('-invalid-ep', dest='invalid_ep', action='store_true',
                         help='Lancer uniquement les tests d\'endpoints invalides')
+    parser.add_argument('-themes', dest='themes', action='store_true',
+                    help='Lancer uniquement les tests de récupération de themes')
     
     args = parser.parse_args()
     
@@ -126,7 +140,8 @@ def main():
         udp=args.udp,
         register=args.register,
         login=args.login,
-        invalid_ep=args.invalid_ep
+        invalid_ep=args.invalid_ep,
+        themes=args.themes
     )
     
     sys.exit(0 if success else 1)
