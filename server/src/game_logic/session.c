@@ -15,6 +15,33 @@ difficulty get_session_difficulty(char* difficulty_str){
     return EASY;
 }
 
+const char* difficulty_to_string(difficulty d) {
+    switch(d) {
+        case EASY: return "facile";
+        case MEDIUM: return "moyen";
+        case HARD: return "difficile";
+        default: return "facile";
+    }
+}
+
+const char* session_type_to_string(session_type t) {
+    switch(t) {
+        case CLASSIC: return "solo";
+        case BATTLE: return "battle";
+        default: return "solo";
+    }
+}
+
+const char* session_status_to_string(session_status s) {
+    switch(s) {
+        case WAITING: return "waiting";
+        case PLAYING: return "playing";
+        case FINISHED: return "finished";
+        default: return "waiting";
+    }
+}
+
+
 void *handle_session(void *args){
     session *_session = (session *) args;
     const char response[1024] = {'\0'};
