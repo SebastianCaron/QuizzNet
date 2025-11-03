@@ -2,6 +2,7 @@ from tests.server.utils.server import ServerMaker
 from tests.server.tcp.test_player_register import PlayerRegisterTester
 from tests.server.tcp.test_player_login import PlayerLoginTester
 from tests.server.tcp.test_invalid_endpoint import InvalidEndpointTester
+from tests.server.tcp.test_themes_list import ThemesListTester
 
 
 def run_register_tests(server_class: ServerMaker):
@@ -69,6 +70,22 @@ def run_invalid_endpoint_tests(server_class: ServerMaker):
     return tests_passed == total_tests
 
 
+def run_themes_list_tests(server_class: ServerMaker):
+    print("=== Tests de récupérations de la liste de themes ===")
+    themes_list_tester = ThemesListTester(server_class)
+    tests_passed = 0
+    total_tests = 1
+    
+    print("\n1. Test de récupération de la liste...")
+    if themes_list_tester.test_themes_list():
+        print("✅ Test d'endpoint invalide réussi")
+        tests_passed += 1
+    else:
+        print("❌ Test d'endpoint invalide échoué")
+    
+    print(f"\n=== Résultats: {tests_passed}/{total_tests} tests réussis ===")
+    return tests_passed == total_tests
+
 def run_all_tcp_tests(server_class: ServerMaker):
     print("=== Tests du serveur TCP QuizNet ===")
     all_passed = True
@@ -81,6 +98,9 @@ def run_all_tcp_tests(server_class: ServerMaker):
     
     result_login = run_login_tests(server_class)
     all_passed = all_passed and result_login
+
+    result_themes = run_themes_list_tests(server_class)
+    all_passed = all_passed and result_themes
     
     return all_passed
 
