@@ -2,7 +2,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "../network/client.h"
 #include "../network/network.h"
 #include "endpoints.h"
 
@@ -11,6 +10,7 @@
 #include "./player/login_player.h"
 #include "./session/create_session.h"
 #include "./session/start_session.h"
+#include "./themes/get_themes_list.h"
 #include "./session/list_session.h"
 
 char is_valid_char(char letter){
@@ -29,7 +29,8 @@ endpoints get_endpoint(char *request){
     if(!strncmp("POST player/register", request, i)) return POST_PLAYER_REGISTER;
     if(!strncmp("POST player/login", request, i)) return POST_PLAYER_LOGIN;
     if(!strncmp("POST session/create", request, i)) return POST_SESSION_CREATE;
-    if(!strncmp("POST session/start", request, i)) return POST_SESSION_CREATE;
+    if(!strncmp("POST session/start", request, i)) return POST_SESSION_START;
+    if(!strncmp("GET themes/list", request, i)) return GET_THEMES_LIST;
     if(!strncmp("GET session/list", request, i)) return GET_SESSION_LIST;
     
     return INVALID_ENDPOINT;
@@ -74,7 +75,9 @@ void handle_request(server *s, char *request, client *cl){
     case POST_SESSION_CREATE:
         post_session_create(s, request, cl);
         break;
-    
+    case GET_THEMES_LIST:
+        get_themes_list(s, request, cl);
+        break;
     case GET_SESSION_LIST:
         get_session_list(s, request, cl);
         break;
