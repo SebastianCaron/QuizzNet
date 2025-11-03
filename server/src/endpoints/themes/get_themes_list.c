@@ -9,9 +9,9 @@
 
 int get_themes_list(server *s, char *request, client *cl){
     char response[1024] = {'\0'};
-    SqliteResult *res = exec_query(s, "SELECT id, name FROM themes");
+    SqliteResult *res = exec_query(s, "SELECT id, name FROM themes;");
 
-    retour_snp = snprintf(response,1023,"{"
+    int retour_snp = snprintf(response,1023,"{"
     "   \"action\":\"themes/list\",\n"
     "   \"statut\":\"200\",\n"
     "   \"message\":\"ok\",\n"
@@ -23,7 +23,7 @@ int get_themes_list(server *s, char *request, client *cl){
         return 1;
     }
 
-    for (int i =0; i< res->row_count : i++){
+    for (int i =0; i< res->row_count; i++){
         retour_snp = snprintf(response + strlen(response), sizeof(response) - strlen(response),
     "       {"
     "                \"id\":%d,"
@@ -36,7 +36,7 @@ int get_themes_list(server *s, char *request, client *cl){
         }
     }
 
-    strcat(response, "  ],\n"
+    strcat(response, "  ]\n"
     "}");
     
     send_response(cl, response);
