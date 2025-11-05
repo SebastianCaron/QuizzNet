@@ -1,10 +1,8 @@
 #include <string.h>
 #include "create_session.h"
-#include "../../game_logic/session.h"
 #include "../endpoints.h"
 #include "../../network/network.h"
 #include "../../json/json.h"
-#include "../../network/client.h"
 #include "../../utils/chained_list.h"
 
 int post_session_create(server* s, char* request, client *cl){

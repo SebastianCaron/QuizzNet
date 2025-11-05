@@ -9,7 +9,8 @@ typedef enum {
     POST_PLAYER_LOGIN,
     POST_SESSION_CREATE,
     POST_SESSION_START,
-    GET_SESSION_LIST
+    GET_SESSION_LIST,
+    GET_THEMES_LIST
 } endpoints;
 
 void handle_request(server *s, char *request, client *cl);

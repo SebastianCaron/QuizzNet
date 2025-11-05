@@ -2,8 +2,6 @@
 
 #include "register_player.h"
 
-#include "../../network/client.h"
-#include "../../network/network.h"
 #include "../endpoints.h"
 #include "../../db/db.h"
 #include "../../json/json.h"

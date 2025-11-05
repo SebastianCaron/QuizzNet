@@ -1,10 +1,7 @@
 #include <string.h>
 #include "session_join.h"
-#include "../../game_logic/session.h"
 #include "../endpoints.h"
-#include "../../network/network.h"
 #include "../../json/json.h"
-#include "../../network/client.h"
 #include "../../utils/chained_list.h"
 
 int post_session_join(server* s, char* request, client *cl){
