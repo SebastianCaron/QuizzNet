@@ -15,6 +15,7 @@ client *client_init(int fd){
 
     res->fd = fd;
     res->connected = 0;
+    res->infos_session.lives = NB_LIVES;
     return res;
 }
 
