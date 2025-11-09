@@ -5,6 +5,8 @@
 #include "questions_generation.h"
 
 void get_questions(server *s, int size, int* tab, int nb_themes, int* ids_themes){
+    // difficulté à gérer ici, passer un tableau de int (where questions.diffuclté in (x,x,x))
+    // si difficulté choisie facile, param = [1], si inter et difficile, param = [2,3]
     int i;
     SqliteResult* resquery;
     char query[512] = {'\0'};
