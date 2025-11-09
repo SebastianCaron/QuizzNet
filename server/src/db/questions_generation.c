@@ -4,7 +4,7 @@
 
 #include "questions_generation.h"
 
-void get_questions(server *s, int size, int* tab, int nb_themes, int* ids_themes){
+void get_random_question_ids(server *s, int size, int* tab, int nb_themes, int* ids_themes){
     int i;
     SqliteResult* resquery;
     char query[512] = {'\0'};
