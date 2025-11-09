@@ -5,6 +5,7 @@
 #include "../../network/network.h"
 #include "../../utils/chained_list.h"
 #include "../../game_logic/session.h"
+#include "../endpoints.h"
 
 char* get_theme_name(server *s, int theme_id) {
     char query[256];
