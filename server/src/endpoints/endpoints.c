@@ -32,6 +32,8 @@ endpoints get_endpoint(char *request){
     if(!strncmp("POST session/start", request, i)) return POST_SESSION_START;
     if(!strncmp("GET themes/list", request, i)) return GET_THEMES_LIST;
     if(!strncmp("GET session/list", request, i)) return GET_SESSION_LIST;
+    if(!strncmp("POST joker/use", request, i)) return POST_JOKER_USE;
+    if(!strncmp("POST question/answer", request, i)) return POST_QUESTION_ANSWER;
     
     return INVALID_ENDPOINT;
 }
@@ -82,6 +84,8 @@ void handle_request(server *s, char *request, client *cl){
         get_session_list(s, request, cl);
         break;
     
+    case POST_JOKER_USE:
+    case POST_QUESTION_ANSWER:
     case INVALID_ENDPOINT:
         send_invalid_response(cl);
         break;
