@@ -28,7 +28,7 @@ int get_themes_list(server *s, char *request, client *cl){
     "       {"
     "                \"id\":%d,"
     "                \"name\":\"%s\""
-    "        },\n", res->rows[i][0], res->rows[i][1]);
+    "        },\n", atoi(res->rows[i][0]), res->rows[i][1]);
 
         if (retour_snp<0){
             throw_error(ENCODING_ERROR, "Erreur snprintf get themes list in boucle");
