@@ -13,6 +13,7 @@
 #include "session_responses/session_finished.h"
 #include "../endpoints/game/joker_use.h"
 #include "../endpoints/game/question_answer.h"
+#include "../endpoints/player/player_left.h"
 
 session_type get_session_type(char* mode){
     return strcmp("solo", mode) ? BATTLE : CLASSIC;
@@ -117,6 +118,7 @@ void *handle_session(void *args){
     // BOUCLE DE JEU
     int current_question;
     int question_num = 0;
+    int receive_res = 0;
     while(!is_everyone_dead(_session) && nb_remaining_question > 0){
 
         current_question = question_ids[_session->nb_questions - nb_remaining_question];
@@ -141,7 +143,8 @@ void *handle_session(void *args){
             }
             
             for(int i = 0; i < clist_size(_session->players); i++){
-                if(((client *)clist_get(_session->players, i))->infos_session.has_answered == 0) session_receive_for_player(_session, i);
+                if(((client *)clist_get(_session->players, i))->infos_session.has_answered == 0) receive_res = session_receive_for_player(_session, i);
+                if(receive_res == -2) return NULL;
             }
             
             usleep(2000);
@@ -188,17 +191,20 @@ void handle_request_session(session *s, char *request, client *p){
     }
 }
 
-void session_receive_for_player(session *s, int i){
+int session_receive_for_player(session *s, int i){
 
     client *p = clist_get(s->players, i);
-    if(!p) return;
+    if(!p) return -1;
     int res = receive_from(p->fd, &s->buffer, &s->buffer_size, &s->buffer_capacity);
 
     if(res == -2){
-        // Gerer erreur
+        res = post_player_left(s->server, p);
+        if(res == 2) return -2;
+        return 0;
     }
 
     handle_request_session(s, s->buffer, p);
+    return 0;
 }
 
 void session_destroy(session *s){

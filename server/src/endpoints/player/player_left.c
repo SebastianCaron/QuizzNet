@@ -41,7 +41,7 @@ int post_player_left(server *s, client *cl){
         }
         if ((i+1) ==  session_actu->nb_players){
             session_destroy(session_actu);
-            return 0;
+            return 2;
         }
     }
 
@@ -55,7 +55,7 @@ int post_player_left(server *s, client *cl){
     }
     if (no_active_player){
         session_destroy(session_actu);
-        return 0;
+        return 2;
     }
 
     return 0;
