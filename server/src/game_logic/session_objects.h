@@ -22,11 +22,26 @@ typedef enum{
     FINISHED
 } session_status;
 
+typedef enum{
+    QCM,
+    TRUEFALSE,
+    FREETEXT
+} question_type;
+
+typedef struct {
+    int id;
+    question_type type;
+    difficulty diff;
+    char statement[500];
+    char answer[500];
+} question;
+
 typedef struct {
 
     int id;
     char *name;
     int *themes_ids;
+    int nb_themes;
     difficulty difficulty;
     int nb_questions;
     int time_limit;
@@ -42,4 +57,7 @@ typedef struct {
 
     chained_list *players;
     server *server;
+    
+    question current_question;
+    int correct_answer_index;
 } session;

@@ -2,12 +2,27 @@
 
 #include "../game_logic/session_objects.h"
 
+#define NB_LIVES 4
+
+typedef struct {
+    char answer_text[512];
+    char answer_other;
+    float response_time;
+} answer;
+
 typedef struct {
     int score;
     char joker_pass;
     char joker_5050;
     char is_creator;
     session *session;
+    char has_answered;
+    char skip;
+    char lives;
+    int correctAnswers;
+    int eliminatedAt;
+
+    answer player_answer;
 } infos_session_client;
 
 typedef struct {
