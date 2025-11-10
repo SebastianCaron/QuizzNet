@@ -1,31 +1,44 @@
+import json
+
+
 def message_route(message):
-    if '"action":"player/register"' in message:
+    if message.startswith('POST question/results'):
         return
-    if '"action":"player/login"' in message:
+    if message.startswith('POST session/player/eliminated'):
         return
-    if '"action":"themes/list"' in message:
+    if message.startswith('POST session/finished'):
         return
-    if '"action":"sessions/list"' in message:
+    if message.startswith('POST session/player/left'):
         return
-    if '"action":"session/create"' in message:
+    if message.startswith('POST session/started'):
         return
-    if '"action":"session/join"' in message:
+    if message.startswith('POST question/new'):
         return
-    if 'POST session/started' in message:
-        return
-    if 'POST question/new' in message:
-        return
-    if '"action":"joker/use"' in message:
-        return
-    if '"action":"question/answer"' in message:
-        return
-    if 'POST question/results' in message:
-        return
-    if 'POST session/player/eliminated' in message:
-        return
-    if 'POST session/finished' in message:
-        return
-    if 'POST session/player/left' in message:
-        return
-    else:
-        "MSG UNKNOWN"
+    if message.startswith('POST'):
+        return "MESAGE INCONNU AU BATAILLON"
+    
+    #Sinon, à priori c'est du json
+    try :
+        json_message = json.loads(message)
+    except:
+        return "ERROR JSON"
+    
+    match json_message["action"]:
+        case "player/register":
+            return
+        case "player/login":
+            return
+        case "themes/list":
+            return
+        case "sessions/list":
+            return
+        case "session/create":
+            return
+        case "session/join":
+            return
+        case "joker/use":
+            return
+        case "question/answer":
+            return
+        case _:
+             return "INCONNU"
