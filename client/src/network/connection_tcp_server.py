@@ -1,5 +1,6 @@
 import socket
 import threading
+from client.src.endpoints.routes import message_route
 
 class TCPClient:
 
@@ -51,7 +52,8 @@ class TCPClient:
                     break
                 message = message.decode("utf-8")
                 print(f"Server sended: {message}")
-                #TODO faire les if pour les messaegs recus
+                message_route(message)
+                
             except socket.timeout:
                 continue
             except Exception as e:
