@@ -4,7 +4,7 @@ import sys
 
 continue_searching = True
 
-# C'est fait sans interface graphique pour le moement juste en
+# C'est fait sans interface graphique pour le moment juste en
 # vieux truc texte 
 
 

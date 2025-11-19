@@ -1,6 +1,8 @@
 # Quizz Net
 
-> Lina LETHOOR & Sebastian CARON
+## Groupe A
+- Lina LETHOOR
+- Sebastian CARON
 
 
 ## Lancer les tests unitaires

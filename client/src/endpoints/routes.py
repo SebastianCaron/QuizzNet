@@ -15,7 +15,7 @@ def message_route(message):
     if message.startswith('POST question/new'):
         return
     if message.startswith('POST'):
-        return "MESAGE INCONNU AU BATAILLON"
+        return "MESSAGE INCONNU AU BATAILLON"
     
     #Sinon, à priori c'est du json
     try :
