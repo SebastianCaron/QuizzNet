@@ -1,7 +1,39 @@
 # Quizz Net
 
-> Lina LETHOOR & Sebastian CARON
+> Lina LETHOOR & Sebastian CARON (Groupe A)
 
+## Compiler et lancer le server
+
+### Compiler
+
+Dans le dossier `server` : 
+
+```bash
+make
+```
+
+Permet de compiler le serveur.
+
+```bash
+make fr0 
+```
+
+Recompile et lance le serveur sur le port 9504 avec le nom `les_12_coups`.
+
+### Lancer le serveur
+
+```bash
+./server 'nom du serveur' port
+```
+
+- 'nom du serveur' correspond au nom du serveur
+- port correpsond au port sur lequel écoutera les connexiosn TCP
+
+
+Exemple :
+```bash
+./server 'les_12_coups' 9504
+```
 
 ## Lancer les tests unitaires
 
@@ -33,3 +65,4 @@ Lance le test login.
 python3 ./tests/run_tests.py -udp -register
 ```
 Compile et démarre le serveur, lance les tests udp et register et arrête le server.
+
