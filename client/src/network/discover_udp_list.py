@@ -17,7 +17,7 @@ def serverlist_discover_UDP_server(broadcast_port: int = BROADCAST_PORT,
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     sock.settimeout(timeout)
 
-    broadcast_address = ('<broadcast>', broadcast_port)
+    broadcast_address = ('127.0.0.1', broadcast_port)
     try:
         sock.sendto(DISCOVERY_MSG.encode('utf-8'), broadcast_address)
     except Exception as e:

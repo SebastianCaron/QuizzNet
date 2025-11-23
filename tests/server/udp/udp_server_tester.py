@@ -17,7 +17,7 @@ from tests.server.utils.server import ServerMaker
 class UDPServerTester:    
     def __init__(self, server_class: ServerMaker):
         self.discovery_message = "looking for quiznet servers"
-        self.expected_response_prefix = "hello i’m a quiznet server:"
+        self.expected_response_prefix = "hello i'm a quiznet server:"
         self.server = server_class
     
     def send_discovery_request(self, timeout: float = 5.0) -> Tuple[bool, str]:

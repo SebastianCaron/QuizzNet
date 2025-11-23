@@ -1,6 +1,6 @@
 import socket
 import threading
-from client.src.endpoints.routes import message_route
+from src.endpoints.routes import message_route
 
 class TCPClient:
 
@@ -13,6 +13,7 @@ class TCPClient:
         self.is_connected = False
         self.listener_thread = None
         self.running = False
+        self.gui_callback = None
 
     # Connexion
     def connect(self) -> bool:
@@ -53,7 +54,8 @@ class TCPClient:
                 message = message.decode("utf-8")
                 print(f"Server sended: {message}")
                 message_route(message)
-                
+                if self.ui_callback:
+                    self.ui_callback(message)
             except socket.timeout:
                 continue
             except Exception as e:
@@ -84,3 +86,7 @@ class TCPClient:
             except Exception as e:
                 print(f"Error when closing socket: {e}")
         self.is_connected = False
+
+    def set_ui_callback(self, callback):
+        self.ui_callback = callback
+
