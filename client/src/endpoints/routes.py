@@ -46,7 +46,7 @@ def message_route(message):
         case "themes/list":
             response_themes_list(message)
         case "sessions/list":
-            rsl.response_session_list(message)
+            response_session_list(message)
         case "session/create":
             response_session_create(message)
         case "session/join":
