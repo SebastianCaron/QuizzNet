@@ -9,18 +9,24 @@ class InfoSession:
     def __init__(self):
         self.session_started = False
         self.players_score = {} # dico pseudo:score, First is the client player
-        self.joker_fifty = True #just info to display the button
-        self.joker_pass = True #same
+        self.joker_fifty = 0 #just info to display the button
+        self.joker_pass = 0 #same
         self.lives = -1 #if -1 -> not displayed not used, classic mode
 
     def get_players_score(self, pseudo):
         return self.players_score[pseudo]
     
-    def get_joker_fifty(self):
-        return self.joker_fifty
+    def set_joker_fifty(self, nb_joker):
+        self.joker_fifty = nb_joker
+
+    def set_joker_pass(self, nb_joker):
+        self.joker_pass = nb_joker
+
+    def joker_fifty_available(self):
+        return self.joker_fifty >= 0
     
-    def get_joker_pass(self):
-        return self.joker_pass
+    def joker_pass_available(self):
+        return self.joker_pass >= 0
     
     def set_new_player(self, pseudo):
         self.players_score[pseudo] = 0
@@ -29,10 +35,10 @@ class InfoSession:
         self.players_score[pseudo] += points
 
     def use_joker_fifty(self):
-        self.joker_fifty = False
+        self.joker_fifty -= 1
 
     def use_joker_pass(self):
-        self.joker_pass = False
+        self.joker_pass -= 1
 
     def set_nb_lives(self, nb_lives):
         self.lives = nb_lives
@@ -40,10 +46,14 @@ class InfoSession:
     def lost_a_life(self):
         self.lives -=1 
 
-    def session_started(self):
+    def session_has_started(self):
         self.session_started = True
 
     def is_session_started(self):
         return self.session_started
     
+    def unset_player(self, pseudo):
+        if not self.session_started:
+            del self.players_score[pseudo]
+
 info_session = InfoSession()
