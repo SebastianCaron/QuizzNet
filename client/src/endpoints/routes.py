@@ -1,17 +1,17 @@
 import json
 #GAME
-from game.respone_themes_list import response_themes_list
+from src.endpoints.game.respone_themes_list import response_themes_list
 
 # PLAYER
-from player.response_player_login import response_player_login
-from player.response_player_register import response_player_register
+from src.endpoints.player.response_player_login import response_player_login
+from src.endpoints.player.response_player_register import response_player_register
 
 # SESSION
-from session.response_session_list import response_session_list
-from session.response_session_create import response_session_create
-from session.response_session_join import response_session_join
-from session.response_session_player_joined import response_session_player_join
-from session.response_session_started import response_session_started
+from src.endpoints.session.response_session_list import response_session_list
+from src.endpoints.session.response_session_create import response_session_create
+from src.endpoints.session.response_session_join import response_session_join
+from src.endpoints.session.response_session_player_joined import response_session_player_join
+from src.endpoints.session.response_session_started import response_session_started
 
 
 def message_route(message):

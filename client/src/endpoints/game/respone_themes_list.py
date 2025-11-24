@@ -1,5 +1,5 @@
 import json
-from client.src.session.session_infos import info_session 
+from src.session.session_infos import info_session 
 #voir si info_session utile
 
 def response_themes_list(message):
