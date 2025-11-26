@@ -1,4 +1,6 @@
 #include "db.h"
+#include "sql_content.h"
+#include "../errors/error.h"
 
 void init_table_theme(server *s){
     
@@ -42,7 +44,8 @@ void init_table_questions(server *s){
             "difficulty INT NOT NULL,"
             "type INT NOT NULL,"
             "statement VARCHAR(500),"
-            "answers VARCHAR(500)"
+            "answers VARCHAR(500),"
+            "explanation VARCHAR(500)"
         ")"
     );
 
@@ -54,7 +57,7 @@ void init_table_theme_quest(server *s){
     
     // Init of the THEME-QUESTIONS table
     SqliteResult *result = exec_query(s,
-        "CREATE TABLE IF NOT EXISTS question_in_theme"
+        "CREATE TABLE IF NOT EXISTS questions_in_themes"
         "("
             "id_question INT NOT NULL,"
             "id_theme INT NOT NULL,"
@@ -66,11 +69,41 @@ void init_table_theme_quest(server *s){
 
 }
 
+void load_content(server *s){
+    char query[4096] = {'\0'};
+
+    char *all_query = SQL_CONTENT;
+
+    int i = 0;
+    int j = 0;
+    int nb = 0;
+    SqliteResult *result;
+    while(all_query[i] != '\0'){
+        if(j >= 4095){
+            throw_error(DATABASE_PREPARE, "Query too long (max 4096 characters)");
+            break;
+        }
+        query[j] = all_query[i];
+        j++;
+        if(query[j-1] == ';'){
+            query[j] = '\0';
+            // debug_log("Query %d: %s\n",nb, query);
+            result = exec_query(s, query);
+            sqlite_result_destroy(result);
+            j = 0;
+            nb++;
+        }
+        i++;
+    }
+
+}
+
 void init_db(server *s){
     debug_log("INITIALISATION DE LA DB.");
     init_table_theme(s);
     init_table_clients(s);
     init_table_questions(s);
     init_table_theme_quest(s);
+    load_content(s);
     debug_log("DB OK!");
 }
