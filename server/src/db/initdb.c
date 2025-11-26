@@ -87,7 +87,7 @@ void load_content(server *s){
         j++;
         if(query[j-1] == ';'){
             query[j] = '\0';
-            debug_log("Query %d: %s\n",nb, query);
+            // debug_log("Query %d: %s\n",nb, query);
             result = exec_query(s, query);
             sqlite_result_destroy(result);
             j = 0;
