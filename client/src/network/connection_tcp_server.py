@@ -4,7 +4,7 @@ from src.endpoints.routes import message_route
 
 class TCPClient:
 
-    def __init__(self, ip: str, port: int, buffer_size: int = 1024, timeout: float = 5.0):
+    def __init__(self, ip: str, port: int, app = None, buffer_size: int = 1024, timeout: float = 5.0):
         self.ip = ip
         self.port = port
         self.buffer_size = buffer_size
@@ -14,6 +14,7 @@ class TCPClient:
         self.listener_thread = None
         self.running = False
         self.gui_callback = None
+        self.app = app
 
     # Connexion
     def connect(self) -> bool:
@@ -47,15 +48,15 @@ class TCPClient:
         while self.running and self.is_connected:
             try:
                 message = self.sock.recv(self.buffer_size)
-                if not message:
-                    print("Server closed the connection")
-                    self.disconnect()
-                    break
+                #if not message:
+                 #   print("Server closed the connection")
+                  #  self.disconnect()
+                   # break
                 message = message.decode("utf-8")
                 print(f"Server sended: {message}")
-                message_route(message)
-                if self.ui_callback:
-                    self.ui_callback(message)
+                message_route(message, self.app)
+                if self.gui_callback:
+                    self.gui_callback(message)
             except socket.timeout:
                 continue
             except Exception as e:
@@ -66,7 +67,7 @@ class TCPClient:
     # Sendind messages
     def send(self, message: str):
         """Send a message to the server"""
-        if not self.is_connected:
+        if not self.is_connected or self.sock is None:
             print("Impossible to send a message: Not connected to any server.")
             return
         try:
@@ -87,6 +88,6 @@ class TCPClient:
                 print(f"Error when closing socket: {e}")
         self.is_connected = False
 
-    def set_ui_callback(self, callback):
-        self.ui_callback = callback
+    def set_gui_callback(self, callback):
+        self.gui_callback = callback
 

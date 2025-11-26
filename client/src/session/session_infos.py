@@ -12,6 +12,7 @@ class InfoSession:
         self.joker_fifty = 0 #just info to display the button
         self.joker_pass = 0 #same
         self.lives = -1 #if -1 -> not displayed not used, classic mode
+        self.is_creator = False
 
     def get_players_score(self, pseudo):
         return self.players_score[pseudo]
@@ -55,5 +56,11 @@ class InfoSession:
     def unset_player(self, pseudo):
         if not self.session_started:
             del self.players_score[pseudo]
+
+    def is_creator(self):
+        return self.is_creator
+    
+    def set_creator(self):
+        self.is_creator = True
 
 info_session = InfoSession()

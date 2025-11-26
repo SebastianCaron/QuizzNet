@@ -1,5 +1,5 @@
 import json
-from client.src.session.session_infos import info_session 
+from src.session.session_infos import info_session 
 
 def response_session_create(message):
     try :
@@ -15,7 +15,9 @@ def response_session_create(message):
         dict_nb_joker = json_message["jokers"]
         info_session.set_joker_fifty = dict_nb_joker["fifty"]
         info_session.set_joker_pass = dict_nb_joker["skip"]
-        #passer à la salle d'attente
+        info_session.set_creator()
+        #passer à la salle d'attente. Comme il est créateur, seul lui peut démarrer
+        # VOIR COMMENT GERER SI CREATEUR LEFT AVANT DEBUT DE LA SESSION
         return
     return
     

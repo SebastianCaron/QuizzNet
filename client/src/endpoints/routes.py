@@ -1,24 +1,28 @@
 import json
 #GAME
-from game.respone_themes_list import response_themes_list
+from src.endpoints.game.respone_themes_list import response_themes_list
+from src.endpoints.game.response_question_new import response_question_new
+from src.endpoints.game.response_joker_used import response_joker_used
+from src.endpoints.game.response_question_answered import response_question_answered
+from src.endpoints.game.response_player_eliminated import response_player_eliminated
 
 # PLAYER
-from player.response_player_login import response_player_login
-from player.response_player_register import response_player_register
+from src.endpoints.player.response_player_login import response_player_login
+from src.endpoints.player.response_player_register import response_player_register
 
 # SESSION
-from session.response_session_list import response_session_list
-from session.response_session_create import response_session_create
-from session.response_session_join import response_session_join
-from session.response_session_player_joined import response_session_player_join
-from session.response_session_started import response_session_started
+from src.endpoints.session.response_session_list import response_session_list
+from src.endpoints.session.response_session_create import response_session_create
+from src.endpoints.session.response_session_join import response_session_join
+from src.endpoints.session.response_session_player_joined import response_session_player_join
+from src.endpoints.session.response_session_started import response_session_started
 
 
-def message_route(message):
+def message_route(message, app):
     if message.startswith('POST question/results'):
         return
     if message.startswith('POST session/player/eliminated'):
-        return
+        response_player_eliminated(message)
     if message.startswith('POST session/finished'):
         return
     if message.startswith('POST session/player/left'):
@@ -26,7 +30,7 @@ def message_route(message):
     if message.startswith('POST session/started'):
         response_session_started(message)
     if message.startswith('POST question/new'):
-        return
+        response_question_new(message)
     if message.startswith('POST session/player/joined'):
         response_session_player_join(message)
     if message.startswith('POST'):
@@ -40,20 +44,20 @@ def message_route(message):
     
     match json_message["action"]:
         case "player/register":
-            response_player_register(message)
+            response_player_register(message, app)
         case "player/login":
-            response_player_login(message)
+            response_player_login(message, app)
         case "themes/list":
             response_themes_list(message)
         case "sessions/list":
-            response_session_list(message)
+            response_session_list(message, app)
         case "session/create":
             response_session_create(message)
         case "session/join":
             response_session_join(message)
         case "joker/use":
-            return
+            response_joker_used(message)
         case "question/answer":
-            return
+            response_question_answered(message)
         case _:
              return "INCONNU"

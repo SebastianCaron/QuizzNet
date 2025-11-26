@@ -1,5 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
+from src.network.connection_tcp_server import TCPClient
+from gui.windows.login_page import LoginPage
+
 
 class SelectServer(tk.Frame):
     def __init__(self, app):
@@ -31,12 +34,13 @@ class SelectServer(tk.Frame):
             return
 
         name, ip, port = self.servers[idx[0]]
-        client = self.app.tcp_client
+        client = TCPClient(ip=ip, port=port, app=self.app)
 
         self.status.config(text=f"Connexion à {name}...")
 
         if client.connect():
             self.status.config(text="Connecté !")
-            # self.app.show_page(LoginPage)
+            self.app.set_tcp_client(client)
+            self.app.show_page(LoginPage)
         else:
             self.status.config(text="Échec de la connexion.")
