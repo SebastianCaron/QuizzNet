@@ -159,7 +159,7 @@ int receive_from(int fd, char **buffer, ssize_t *size, int *capacity){
     if ((*size) < (*capacity))
         (*buffer)[(*size)] = '\0';
 
-    // info_log("[TCP] Reçu %d octets du client fd=%d", (*size), fd);
+    info_log("Receive from %d: %s\n", fd, buffer);
     return (*size);
 }
 
