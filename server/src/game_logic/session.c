@@ -192,13 +192,21 @@ void session_receive_for_player(session *s, int i){
 
     client *p = clist_get(s->players, i);
     if(!p) return;
-    int res = receive_from(p->fd, &s->buffer, &s->buffer_size, &s->buffer_capacity);
+    int res = receive_from(p->fd, &p->buffer_cl);
 
     if(res == -2){
         // Gerer erreur
     }
 
-    handle_request_session(s, s->buffer, p);
+    if(res > 0 && request_available(&p->buffer_cl)){
+        char *request = get_request(&p->buffer_cl);
+        if(request){
+            handle_request_session(s, request, p);
+            update_buffer(&p->buffer_cl, strlen(request));
+            free(request);
+        }
+    }
+    reset_full_buffer(&p->buffer_cl);
 }
 
 void session_destroy(session *s){
