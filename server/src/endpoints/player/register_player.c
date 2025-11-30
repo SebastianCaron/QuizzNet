@@ -17,7 +17,7 @@ int post_player_register(server *s, char *request, client *cl){
         if (error_ptr != NULL) {
             throw_error(JSON_PARSING, error_ptr);
         }
-        cJSON_Delete(json);
+        send_error_response(cl);
         return 1;
     }
 
