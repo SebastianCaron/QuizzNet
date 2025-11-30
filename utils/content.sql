@@ -1,3 +1,7 @@
+INSERT INTO themes (id, name) VALUES (1, 'Histoire de France');
+INSERT INTO themes (id, name) VALUES (2, 'Animaux Marins');
+INSERT INTO themes (id, name) VALUES (3, 'Mythologie Grecque');
+
 INSERT INTO questions (id, difficulty, type, statement, answers, explanation) VALUES (
     1, 1, 2,
     'Qui était le premier empereur des Français ?',
