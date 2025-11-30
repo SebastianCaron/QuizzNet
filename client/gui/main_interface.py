@@ -3,6 +3,7 @@ from gui.windows.searching_server import SearchingServer
 from gui.windows.select_server import SelectServer
 from gui.windows.login_page import LoginPage
 from gui.windows.liste_session import SessionListPage
+from gui.windows.create_session import SessionCreatePage
 
 from src.endpoints.routes import message_route
 
@@ -13,6 +14,7 @@ class MainInterfaceClient(tk.Tk):
         self.title("QuizNet")
         self.geometry("600x400")
         self.resizable(False, False)
+        self.current_page = None
 
         self.tcp_client = None
         self.session_info = session_info
@@ -20,7 +22,7 @@ class MainInterfaceClient(tk.Tk):
         self.frames = {}
 
         #Init pages
-        for F in (SearchingServer, SelectServer, LoginPage, SessionListPage):
+        for F in (SearchingServer, SelectServer, LoginPage, SessionListPage, SessionCreatePage):
             frame = F(self)
             self.frames[F] = frame
             frame.place(relwidth=1, relheight=1)
@@ -29,6 +31,7 @@ class MainInterfaceClient(tk.Tk):
 
     # Show a specific page
     def show_page(self, page_class):
+        self.current_page = page_class
         frame = self.frames[page_class]
         frame.tkraise()
         if hasattr(frame, "on_show"):
@@ -41,7 +44,15 @@ class MainInterfaceClient(tk.Tk):
         except Exception as e:
             print("Erreur route:", e)
 
+    def show_error_banner(self, text):
+        frame = self.frames[self.current_page]
+
+        if not hasattr(frame, "error_label"):
+            frame.error_label = tk.Label(frame, fg="white", bg="red")
+            frame.error_label.pack(fill="x")
+
+        frame.error_label.config(text=text)
+
 
     def set_tcp_client(self, tcp_client):
         self.tcp_client = tcp_client
-        self.tcp_client.set_gui_callback(lambda msg: self.after(0, self.handle_server_message, msg))

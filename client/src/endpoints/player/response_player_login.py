@@ -1,4 +1,5 @@
 import json
+import time
 
 def response_player_login(message, app):
     try :
@@ -7,5 +8,10 @@ def response_player_login(message, app):
         return "ERROR JSON"
     #afficher message de la réponse 2 puis wait 2sec, sans changer niveau graphique
     if json_message["statut"]=="200":
-        app.tcp_client.send("GET sessions/list")
-    return
+        app.update()
+        time.sleep(0.1)
+        app.tcp_client.send("GET session/list")
+    else:
+        error_msg = json_message.get("message", "Erreur inconnue")
+        print(f"Login échoué : {error_msg}")
+        app.show_error_banner(error_msg)

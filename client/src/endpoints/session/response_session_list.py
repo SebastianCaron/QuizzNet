@@ -7,7 +7,12 @@ def response_session_list(message, app):
     except:
         return "ERROR JSON"
     
-    liste_session = json_message["sessions"]
-    page = app.frames[SessionListPage]
-    page.update_sessions(liste_session)
+    if json_message["nbSessions"] == 0:
+        page = app.frames[SessionListPage]
+        page.update_sessions([])
+    else:
+        liste_session = json_message["sessions"]
+        page = app.frames[SessionListPage]
+        page.update_sessions(liste_session)
 
+    app.show_page(SessionListPage)

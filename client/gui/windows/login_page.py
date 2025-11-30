@@ -46,13 +46,15 @@ class LoginPage(tk.Frame):
             messagebox.showwarning("Erreur", "Veuillez remplir tous les champs.")
             return
 
-        # Envoi au serveur
-        message = ("POST player/login\n"
-        "{\n"
-        f"\"pseudo\":\"{username}\",\n"
-        f"\"password\":\"{password}\"\n"
-        "}")
-
+        
+        message = (
+            "POST player/login\n"
+            "{\n"
+            f'  "pseudo":"{username}",\n'
+            f'  "password":"{password}"\n'
+            "}\n"
+        )
+        print("Message envoyé au serveur:", repr(message))
         self.app.tcp_client.send(message)
 
         self.status.config(text="Connexion en cours...")
@@ -65,14 +67,17 @@ class LoginPage(tk.Frame):
             messagebox.showwarning("Erreur", "Veuillez remplir tous les champs.")
             return
 
-        message = ("POST player/register\n"
-        "{\n"
-        f"\"pseudo\":\"{username}\",\n"
-        f"\"password\":\"{password}\"\n"
-        "}")
-
+ 
+        message = (
+            "POST player/register\n"
+            "{\n"
+            f'  "pseudo":"{username}",\n'
+            f'  "password":"{password}"\n'
+            "}\n"
+        )
+   
         self.app.tcp_client.send(message)
-
+        print("Message envoyé au serveur:", repr(message))
         self.status.config(text="Inscription en cours...")
 
     # Appelée quand Tk raise la page

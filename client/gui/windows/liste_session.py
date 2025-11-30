@@ -46,6 +46,6 @@ class SessionListPage(tk.Frame):
         self.status.config(text="Demande de connexion...")
 
     def create_session(self):
-        msg = "POST session/create\n{}"
+        msg = "GET themes/list"
         self.app.tcp_client.send(msg)
         self.status.config(text="Création de session...")

@@ -44,19 +44,26 @@ class TCPClient:
 
     # Listening
     def _listen_server(self):
-        """Listening the server continuously"""
+        buffer = b""
         while self.running and self.is_connected:
             try:
                 message = self.sock.recv(self.buffer_size)
-                #if not message:
-                 #   print("Server closed the connection")
-                  #  self.disconnect()
-                   # break
-                message = message.decode("utf-8")
-                print(f"Server sended: {message}")
-                message_route(message, self.app)
-                if self.gui_callback:
-                    self.gui_callback(message)
+                if not message:
+                   print("Server closed the connection")
+                   self.disconnect()
+                   break
+                buffer+=message
+                while b"\n}" in buffer:
+                    idx = buffer.find(b"\n}") + 2
+                    msg_bytes = buffer[:idx]
+                    buffer = buffer[idx:]
+                    try:
+                        message = msg_bytes.decode("utf-8").strip()
+                        print("Server sended:", message)
+                        if self.app:
+                            self.app.handle_server_message(message)
+                    except Exception as e:
+                        print(f"Error decoding message: {e}")
             except socket.timeout:
                 continue
             except Exception as e:
@@ -69,6 +76,8 @@ class TCPClient:
         """Send a message to the server"""
         if not self.is_connected or self.sock is None:
             print("Impossible to send a message: Not connected to any server.")
+            if (self.sock is None):
+                print("NONE SOCK")
             return
         try:
             self.sock.sendall(message.encode("utf-8"))
@@ -87,7 +96,4 @@ class TCPClient:
             except Exception as e:
                 print(f"Error when closing socket: {e}")
         self.is_connected = False
-
-    def set_gui_callback(self, callback):
-        self.gui_callback = callback
 

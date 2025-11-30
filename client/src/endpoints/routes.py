@@ -42,13 +42,18 @@ def message_route(message, app):
     except:
         return "ERROR JSON"
     
+    if json_message["message"] == "Bad request":
+        print("NOT ACTION")
+        app.show_error_banner("Bad request")
+        return
+    
     match json_message["action"]:
         case "player/register":
             response_player_register(message, app)
         case "player/login":
             response_player_login(message, app)
         case "themes/list":
-            response_themes_list(message)
+            response_themes_list(message, app)
         case "sessions/list":
             response_session_list(message, app)
         case "session/create":
@@ -60,4 +65,4 @@ def message_route(message, app):
         case "question/answer":
             response_question_answered(message)
         case _:
-             return "INCONNU"
+            print("INCONNU")
