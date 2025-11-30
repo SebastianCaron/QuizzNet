@@ -1,8 +1,12 @@
 #include <openssl/evp.h>
 #include <openssl/crypto.h>
 #include <openssl/bio.h>
+#include <string.h>
+#include <stdlib.h>
 
-static unsigned char* hash_password(const char* password) {
+#include "hash_pass.h"
+
+unsigned char* hash_password(const char* password) {
     unsigned char* hash = malloc(EVP_MAX_MD_SIZE);
     size_t len;
     EVP_Q_digest(NULL, "SHA-256", NULL, password, strlen(password), hash, &len);
