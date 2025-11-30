@@ -6,6 +6,7 @@
 #include "../endpoints.h"
 #include "../../db/db.h"
 #include "../../json/json.h"
+#include "../../utils/hash_pass.h"
 
 int post_player_login(server *s, char *request, client *cl){
     char query[1024] = {'\0'};
@@ -55,7 +56,7 @@ int post_player_login(server *s, char *request, client *cl){
         return 1;
     }
 
-    if(strcmp(res->rows[0][0], password)){
+    if(strcmp(res->rows[0][0], hash_password(password))){
         char *response =
         "{"
         "   \"action\":\"player/login\",\n"
