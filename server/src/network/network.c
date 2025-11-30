@@ -15,6 +15,7 @@
 #include "../errors/error.h"
 #include "../endpoints/endpoints.h"
 #include "../utils/chained_list.h"
+#include "../utils/buffer_requests.h"
 
 int set_nonblocking(int fd) {
     int flags = fcntl(fd, F_GETFL, 0);
@@ -117,21 +118,34 @@ void destroy_server(server *s){
 }
 
 int receive_from(int fd, buffer *b){
-    if (fd < 0) return 0;
+    if (fd < 0 || !b) return 0;
 
-    ssize_t bytes = 0;
-    bytes = recv(fd, b->buffer + b->size, b->capacity - b->size - 1, 0);
-    b->size += bytes;
+    // Initialiser la capacité si elle n'est pas définie
+    if (b->capacity == 0) {
+        b->capacity = MAX_BUFFER_SIZE;
+    }
 
+    ssize_t bytes = recv(fd, b->buffer + b->size, b->capacity - b->size - 1, 0);
+    
+    if (bytes < 0) {
+        // Erreur de réception
+        return -2;
+    }
+    
     if (bytes == 0) {
+        // Connexion fermée
         return -1;
     }
+    
+    b->size += bytes;
+    b->buffer[b->size] = '\0';
     
     return b->size;
 }
 
 int server_receive_from(server *s, int i) {
     client *client = clist_get(s->clients, i);
+    if (!client) return 0;
 
     int fd = client->fd;
     if (fd < 0) return 0;
@@ -140,6 +154,9 @@ int server_receive_from(server *s, int i) {
 
     if(res == -1){
         info_log("[TCP] Client %d closed connection.", i);
+    } else if(res == -2){
+        info_log("[TCP] Client %d error.", i);
+        return 0;
     }
 
     return res;
