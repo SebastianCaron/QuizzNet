@@ -6,6 +6,12 @@
 
 ### Compiler
 
+### Install openssl
+
+```bash
+sudo apt install libssl-dev
+```
+
 Dans le dossier `server` : 
 
 ```bash
