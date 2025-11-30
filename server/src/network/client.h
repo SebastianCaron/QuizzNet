@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../game_logic/session_objects.h"
+#include "../utils/buffer_requests.h"
 
 #define NB_LIVES 4
 
@@ -30,6 +31,7 @@ typedef struct {
     char connected;
     char* pseudo;
     infos_session_client infos_session;
+    buffer buffer_cl;
 } client;
 
 client *client_init(int fd);

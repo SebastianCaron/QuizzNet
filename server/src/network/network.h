@@ -5,8 +5,9 @@
 
 #include "server.h"
 #include "client.h"
+#include "../utils/buffer_requests.h"
 
-int receive_from(int fd, char **buffer, ssize_t *size, int *capacity);
+int receive_from(int fd, buffer *b);
 
 server *start_server(int port);
 

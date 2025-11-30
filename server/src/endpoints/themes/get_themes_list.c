@@ -24,11 +24,19 @@ int get_themes_list(server *s, char *request, client *cl){
     }
 
     for (int i =0; i< res->row_count; i++){
-        retour_snp = snprintf(response + strlen(response), sizeof(response) - strlen(response),
-    "       {"
-    "                \"id\":%d,"
-    "                \"name\":\"%s\""
-    "        },\n", atoi(res->rows[i][0]), res->rows[i][1]);
+        if (i < res->row_count - 1) {
+            retour_snp = snprintf(response + strlen(response), sizeof(response) - strlen(response),
+        "       {"
+        "                \"id\":%d,"
+        "                \"name\":\"%s\""
+        "        },\n", atoi(res->rows[i][0]), res->rows[i][1]);
+        } else {
+            retour_snp = snprintf(response + strlen(response), sizeof(response) - strlen(response),
+        "       {"
+        "                \"id\":%d,"
+        "                \"name\":\"%s\""
+        "        }\n", atoi(res->rows[i][0]), res->rows[i][1]);
+        }
 
         if (retour_snp<0){
             throw_error(ENCODING_ERROR, "Erreur snprintf get themes list in boucle");
