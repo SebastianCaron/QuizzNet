@@ -5,6 +5,7 @@
 #include "../endpoints.h"
 #include "../../db/db.h"
 #include "../../json/json.h"
+#include "../../utils/hash_pass.h"
 
 int post_player_register(server *s, char *request, client *cl){
     char query[1024] = {'\0'};
@@ -56,6 +57,7 @@ int post_player_register(server *s, char *request, client *cl){
     sqlite_result_destroy(check_res);
     
     // TODO: Hash password
+    password = hash_password(password);
 
     snprintf(query, 1023, "INSERT INTO clients(pseudo, password) VALUES ('%s', '%s');", 
         pseudo, password);
