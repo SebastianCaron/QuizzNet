@@ -16,6 +16,7 @@
 #include "../endpoints/endpoints.h"
 #include "../utils/chained_list.h"
 #include "../utils/buffer_requests.h"
+#include "../game_logic/session.h"
 
 int set_nonblocking(int fd) {
     int flags = fcntl(fd, F_GETFL, 0);
@@ -171,6 +172,9 @@ void server_client_procedure(server *s){
         resp = server_receive_from(s, i);
         if(resp == -1){
             client *cl = clist_pop(s->clients, i);
+            if(cl && cl->infos_session.session){
+                session_remove_client(cl->infos_session.session, cl);
+            }
             client_destroy(cl);
             continue;
         }
