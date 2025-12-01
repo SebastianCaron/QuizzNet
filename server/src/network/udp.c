@@ -5,11 +5,13 @@
 #include <pthread.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <fcntl.h>
 #include <errno.h>
 
 #include "network.h"
 #include "udp.h"
 #include "../errors/error.h"
+#include "server.h"
 
 void* udp_thread_task(void *arg){
     udp_thread_args *args = (udp_thread_args *)arg;
@@ -40,18 +42,32 @@ void* udp_thread_task(void *arg){
         return NULL;
     }
 
+    int flags = fcntl(udp_sock, F_GETFL, 0);
+    if (flags == -1 || fcntl(udp_sock, F_SETFL, flags | O_NONBLOCK) == -1) {
+        perror("fcntl");
+        close(udp_sock);
+        free(args);
+        return NULL;
+    }
+
     info_log("[UDP] Discovery thread started on port %d", UDP_PORT);
 
-    while (1) {
+    server_state *state = get_server_state();
+    while (!state->should_stop) {
         ssize_t recv_len = recvfrom(udp_sock, buffer, sizeof(buffer) - 1, 0, (struct sockaddr *)&client_addr, &client_len);
+        
         if (recv_len < 0) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                usleep(500000);
+                continue;
+            }
             perror("recvfrom");
             continue;
         }
-        debug_log("%ld\n", recv_len);
+        debug_log("%ld", recv_len);
 
         buffer[recv_len] = '\0';
-        debug_log("[UDP] RECEIVED : %s\n", buffer);
+        debug_log("[UDP] RECEIVED : %s", buffer);
 
         if (strcmp(buffer, "looking for quiznet servers") == 0) {
             char response[BUFFER_SIZE];
@@ -89,6 +105,9 @@ pthread_t start_udp(const char *SERVER_NAME , const char *PORT_TCP) {
         free(udp_args);
         exit(EXIT_FAILURE);
     }
+
+    server_state *state = get_server_state();
+    state->udp_thread = udp_thread;
 
     info_log("Server started. UDP discovery running in background.");
 
