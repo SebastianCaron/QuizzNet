@@ -3,6 +3,7 @@
 #include "../endpoints.h"
 #include "../../json/json.h"
 #include "../../utils/chained_list.h"
+#include "../../game_logic/session.h"
 
 int post_session_join(server* s, char* request, client *cl){
     int retour_snp;
@@ -34,6 +35,19 @@ int post_session_join(server* s, char* request, client *cl){
             return 0;
     }
 
+    // Si le client est déjà dans cette session, retourner une erreur
+    if(cl->infos_session.session == session_to_join){
+        char *response_full =
+            "{"
+            "   \"action\":\"session/join\",\n"
+            "   \"statut\":\"400\",\n"
+            "   \"message\":\"already in this session\"\n"
+            "}";
+        send_response(cl, response_full);
+        cJSON_Delete(json);
+        return 0;
+    }
+    
     if (session_to_join->nb_players == session_to_join->max_nb_players){
             char *response_full =
             "{"
@@ -42,8 +56,15 @@ int post_session_join(server* s, char* request, client *cl){
             "   \"message\":\"session is full\"\n"
             "}";
             send_response(cl, response_full);
+            cJSON_Delete(json);
             return 0;
     }
+    
+    // Si le client est déjà dans une autre session, le retirer de l'ancienne
+    if(cl->infos_session.session){
+        session_remove_client(cl->infos_session.session, cl);
+    }
+    
     clist_append(session_to_join->players, cl);
     session_to_join->nb_players++;
     retour_snp = snprintf(response_other_players,1023,"{"
