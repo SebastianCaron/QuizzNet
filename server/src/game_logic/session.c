@@ -140,8 +140,11 @@ void *handle_session(void *args){
                 break;
             }
             
-            for(int i = 0; i < clist_size(_session->players); i++){
-                if(((client *)clist_get(_session->players, i))->infos_session.has_answered == 0) session_receive_for_player(_session, i);
+            for(int i = clist_size(_session->players) - 1; i >= 0; i--){
+                client *p = (client *)clist_get(_session->players, i);
+                if(p && p->infos_session.has_answered == 0) {
+                    session_receive_for_player(_session, i);
+                }
             }
             
             usleep(2000);
@@ -188,14 +191,51 @@ void handle_request_session(session *s, char *request, client *p){
     }
 }
 
-void session_receive_for_player(session *s, int i){
+void session_remove_client(session *s, client *cl){
+    if(!s || !cl) return;
+    
+    int client_index = clist_find(s->players, cl);
+    if(client_index == -1) return;
+    
+    if(cl->infos_session.is_creator && clist_size(s->players) > 1){
+        for(int i = 0; i < clist_size(s->players); i++){
+            client *other_client = (client *)clist_get(s->players, i);
+            if(other_client != cl && other_client){
+                other_client->infos_session.is_creator = 1;
+                break;
+            }
+        }
+    }
+    
+    clist_remove(s->players, cl);
+    s->nb_players--;
+    
+    cl->infos_session.session = NULL;
+    cl->infos_session.is_creator = 0;
+    
+    if(clist_size(s->players) == 0 && s->status != PLAYING){
+        clist_remove(s->server->sessions, s);
+        session_destroy(s);
+    }
+}
 
+void session_receive_for_player(session *s, int i){
+    if(!s) return;
+    
     client *p = clist_get(s->players, i);
     if(!p) return;
     int res = receive_from(p->fd, &p->buffer_cl);
 
+    if(res == -1){
+        session_remove_client(s, p);
+        client_destroy(p);
+        return;
+    }
+    
     if(res == -2){
-        // Gerer erreur
+        session_remove_client(s, p);
+        client_destroy(p);
+        return;
     }
 
     if(res > 0 && request_available(&p->buffer_cl)){
