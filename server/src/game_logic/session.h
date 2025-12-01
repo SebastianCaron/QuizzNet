@@ -21,3 +21,5 @@ void session_destroy(session *);
 session* get_session_by_id(chained_list* l_sessions, int id_session);
 
 void session_receive_for_player(session *s, int i);
+
+void session_remove_client(session *s, client *cl);
