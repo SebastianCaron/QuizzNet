@@ -4,9 +4,7 @@
 
 #include "questions_generation.h"
 
-    // difficulté à gérer ici, passer un tableau de int (where questions.diffuclté in (x,x,x))
-    // si difficulté choisie facile, param = [1], si inter et difficile, param = [2,3]
-void get_random_question_ids(server *s, int size, int* tab, int nb_themes, int* ids_themes){
+void get_random_question_ids(server *s, int size, int* tab, int nb_themes, int* ids_themes, int nb_difficulties, int* difficulties){
     int i;
     SqliteResult* resquery;
     char query[512] = {'\0'};
@@ -23,6 +21,17 @@ void get_random_question_ids(server *s, int size, int* tab, int nb_themes, int* 
     for (i =1; i < nb_themes; i++){
         strcat(query, ",");
         snprintf(number, sizeof(number), "%d", ids_themes[i]);
+        strcat(query, number);
+    }
+
+    strcat(query, ") AND q.difficulty IN (");
+    
+    snprintf(number, sizeof(number), "%d", difficulties[0]);
+    strcat(query, number);
+    
+    for (i = 1; i < nb_difficulties; i++){
+        strcat(query, ",");
+        snprintf(number, sizeof(number), "%d", difficulties[i]);
         strcat(query, number);
     }
 

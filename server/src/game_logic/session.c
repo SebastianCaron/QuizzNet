@@ -87,7 +87,11 @@ int *create_question_set(session *s){
         throw_error(MEMORY_ALLOCATION, "Erreur creation set de questions.");
         return res;
     }
-    get_random_question_ids(s->server, s->nb_questions, res, s->nb_themes, s->themes_ids);
+    
+    int db_difficulty = (int)s->difficulty + 1;
+    int difficulties[1] = {db_difficulty};
+    
+    get_random_question_ids(s->server, s->nb_questions, res, s->nb_themes, s->themes_ids, 1, difficulties);
 
     return res;
 }
