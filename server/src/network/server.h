@@ -1,6 +1,7 @@
 #pragma once
 
 #include <arpa/inet.h>
+#include <pthread.h>
 
 #include "../utils/chained_list.h"
 #include "../sqlite/sqlite3.h"
@@ -24,3 +25,9 @@ typedef struct {
     sqlite3 *db;
 
 } server;
+
+typedef struct {
+    int should_stop;
+    pthread_t udp_thread;
+    server *srv;
+} server_state;

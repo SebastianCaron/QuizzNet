@@ -18,6 +18,22 @@
 #include "../utils/buffer_requests.h"
 #include "../game_logic/session.h"
 
+// Variable globale pour l'état du serveur
+static server_state g_server_state = {0};
+
+void init_server_state(server *s) {
+    g_server_state.should_stop = 0;
+    g_server_state.srv = s;
+}
+
+void cleanup_server_state(void) {
+    g_server_state.should_stop = 1;
+}
+
+server_state* get_server_state(void) {
+    return &g_server_state;
+}
+
 int set_nonblocking(int fd) {
     int flags = fcntl(fd, F_GETFL, 0);
     if (flags == -1) return -1;
@@ -165,10 +181,18 @@ int server_receive_from(server *s, int i) {
 
 
 void server_client_procedure(server *s){
+    server_state *state = get_server_state();
+    if (state->should_stop) {
+        return;
+    }
+    
     accept_new_connection(s);
     int resp = 0;
     int i = 0;
     while(i < clist_size(s->clients)){
+        if (state->should_stop) {
+            break;
+        }
         resp = server_receive_from(s, i);
         if(resp == -1){
             client *cl = clist_pop(s->clients, i);
