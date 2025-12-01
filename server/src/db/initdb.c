@@ -69,6 +69,19 @@ void init_table_theme_quest(server *s){
 
 }
 
+int db_has_content(server *s){
+    SqliteResult *result = exec_query(s, "SELECT COUNT(*) FROM themes");
+    int has_content = 0;
+    
+    if(result && result->row_count > 0 && result->rows[0] && result->rows[0][0]){
+        int count = atoi(result->rows[0][0]);
+        has_content = (count > 0);
+    }
+    
+    sqlite_result_destroy(result);
+    return has_content;
+}
+
 void load_content(server *s){
     char query[4096] = {'\0'};
 
@@ -104,6 +117,13 @@ void init_db(server *s){
     init_table_clients(s);
     init_table_questions(s);
     init_table_theme_quest(s);
-    load_content(s);
+    
+    if(!db_has_content(s)){
+        debug_log("BASE DE DONNEES VIDE, CHARGEMENT DU CONTENU...");
+        load_content(s);
+    } else {
+        debug_log("BASE DE DONNEES DEJA INITIALISEE, PAS DE CHARGEMENT DU CONTENU.");
+    }
+    
     debug_log("DB OK!");
 }
