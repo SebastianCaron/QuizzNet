@@ -1,13 +1,14 @@
 import tkinter as tk
 import json
 from tkinter import ttk, messagebox
+from gui.windows.liste_session import SessionListPage
 
 class SessionCreatePage(tk.Frame):
     def __init__(self, app):
         super().__init__(app)
         self.app = app
 
-        tk.Label(self, text="Créer une session", font=("Arial", 20)).pack(pady=20)
+        tk.Label(self, text="Créer une session", font=("Arial", 15)).pack(pady=10)
 
         form = tk.Frame(self)
         form.pack()
@@ -45,7 +46,7 @@ class SessionCreatePage(tk.Frame):
         self.max_players.grid(row=5, column=1, pady=5)
 
         # THEMES
-        tk.Label(self, text="Choisir les thèmes :", font=("Arial", 14)).pack(pady=10)
+        tk.Label(self, text="Choisir les thèmes :", font=("Arial", 10)).pack(pady=5)
 
         self.theme_vars = []
         self.theme_frame = tk.Frame(self)
@@ -59,23 +60,35 @@ class SessionCreatePage(tk.Frame):
             .grid(row=0, column=0, padx=10)
 
         tk.Button(btn_frame, text="Retour", width=15, 
-                  command=lambda: app.show_page("SessionListPage"))\
+                command=lambda: app.show_page(SessionListPage))\
             .grid(row=0, column=1, padx=10)
 
     # ----------------------
     # MISE À JOUR DES THÈMES
     # ----------------------
     def update_theme_list(self, themes):
+        # Nettoyage
         for widget in self.theme_frame.winfo_children():
             widget.destroy()
 
         self.theme_vars = []
 
+        cols = 3
+        row = 0
+        col = 0
+
         for theme in themes:
             var = tk.IntVar()
             cb = tk.Checkbutton(self.theme_frame, text=theme["name"], variable=var)
-            cb.pack(anchor="w")
+
+            cb.grid(row=row, column=col, sticky="w", padx=10, pady=5)
+
             self.theme_vars.append((var, theme["id"]))
+
+            col += 1
+            if col >= cols:
+                col = 0
+                row += 1
 
     # ----------------------
     # ENVOI AU SERVEUR
@@ -100,6 +113,7 @@ class SessionCreatePage(tk.Frame):
             "mode": self.mode.get(),
             "maxPlayers": int(self.max_players.get())
         }
+        msg = f"POST session/create\n{payload}"
+        print("Message envoyé au serveur:", repr(msg))
 
-        msg = "POST session/create\n" + json.dumps(payload, indent=2)
         self.app.tcp_client.send(msg)
