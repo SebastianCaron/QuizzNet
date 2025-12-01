@@ -17,3 +17,8 @@ void server_client_procedure(server *s);
 void remove_client_from_server_procedure(server *s, client *cl);
 
 void attach_client_to_server_procedure(server *s, client *cl);
+
+
+void init_server_state(server *s);
+void cleanup_server_state(void);
+server_state* get_server_state(void);
