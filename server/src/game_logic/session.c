@@ -13,6 +13,7 @@
 #include "session_responses/session_finished.h"
 #include "../endpoints/game/joker_use.h"
 #include "../endpoints/game/question_answer.h"
+#include "../network/server.h"
 
 session_type get_session_type(char* mode){
     return strcmp("solo", mode) ? BATTLE : CLASSIC;
@@ -109,6 +110,7 @@ void reset_session_players(session *s){
 void *handle_session(void *args){
     session *_session = (session *) args;
     int cooldown_question = SESSION_QUESTION_COOLDOWN;
+    server_state *state = get_server_state();
 
     question q;
 
@@ -116,12 +118,21 @@ void *handle_session(void *args){
     int nb_remaining_question = _session->nb_questions;
 
     send_session_start(_session);
-    sleep(SESSION_START_COOLDOWN);
+    
+    for (int i = 0; i < SESSION_START_COOLDOWN && !state->should_stop; i++) {
+        sleep(1);
+    }
+    
+    if (state->should_stop) {
+        free(question_ids);
+        session_destroy(_session);
+        return NULL;
+    }
 
     // BOUCLE DE JEU
     int current_question;
     int question_num = 0;
-    while(!is_everyone_dead(_session) && nb_remaining_question > 0){
+    while(!is_everyone_dead(_session) && nb_remaining_question > 0 && !state->should_stop){
 
         current_question = question_ids[_session->nb_questions - nb_remaining_question];
         get_question(_session->server, current_question, &q);
@@ -136,7 +147,7 @@ void *handle_session(void *args){
         time_t start_time = time(NULL);
         int time_limit_seconds = _session->time_limit;
         
-        while(!has_everyone_answered(_session)) {
+        while(!has_everyone_answered(_session) && !state->should_stop) {
             time_t current_time = time(NULL);
             time_t elapsed_time = current_time - start_time;
             
@@ -154,15 +165,24 @@ void *handle_session(void *args){
             usleep(2000);
         }
 
+        if (state->should_stop) {
+            break;
+        }
+
         send_session_results(_session, question_num);
 
         nb_remaining_question--;
 
-        sleep(cooldown_question);
+        for (int i = 0; i < cooldown_question && !state->should_stop; i++) {
+            sleep(1);
+        }
     }
 
-    send_session_finished(_session);
+    if (!state->should_stop) {
+        send_session_finished(_session);
+    }
 
+    free(question_ids);
     session_destroy(_session);
 
     return NULL;
