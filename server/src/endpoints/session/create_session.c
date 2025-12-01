@@ -4,6 +4,7 @@
 #include "../../network/network.h"
 #include "../../json/json.h"
 #include "../../utils/chained_list.h"
+#include "../../game_logic/session.h"
 
 int post_session_create(server* s, char* request, client *cl){
     int retour_snp;
@@ -22,6 +23,7 @@ int post_session_create(server* s, char* request, client *cl){
             throw_error(JSON_PARSING, error_ptr);
         }
         cJSON_Delete(json);
+        free(new_session);
         return 1;
     }
     
@@ -39,10 +41,22 @@ int post_session_create(server* s, char* request, client *cl){
     new_session->players = clist_init();
     if(!(new_session->players)){
         throw_error(MEMORY_ALLOCATION, "Erreur allocation session_create : new_session -> client");
+        cJSON_Delete(json);
+        free(new_session);
         return 1;
     }
+    
+    // Si le client est déjà dans une session, le retirer de l'ancienne
+    if(cl->infos_session.session){
+        session_remove_client(cl->infos_session.session, cl);
+    }
+    
     clist_append(new_session->players, cl);
+    cl->infos_session.session = new_session;
+    cl->infos_session.is_creator = 1;
     new_session->server = s;
+    
+    clist_append(s->sessions, new_session);
 
     if (new_session->type == CLASSIC){
         retour_snp = snprintf(response,1023,"{"
