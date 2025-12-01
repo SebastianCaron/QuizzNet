@@ -15,6 +15,7 @@
 #include "../errors/error.h"
 #include "../endpoints/endpoints.h"
 #include "../utils/chained_list.h"
+#include "../utils/buffer_requests.h"
 
 int set_nonblocking(int fd) {
     int flags = fcntl(fd, F_GETFL, 0);
@@ -116,63 +117,46 @@ void destroy_server(server *s){
     free(s);
 }
 
-int receive_from(int fd, char **buffer, ssize_t *size, int *capacity){
-    if (fd < 0) return 0;
+int receive_from(int fd, buffer *b){
+    if (fd < 0 || !b) return 0;
 
-    ssize_t bytes = 0;
-    (*size) = 0;
-
-    while (1) {
-        size_t remaining = (*capacity) - (*size);
-
-        if (remaining == 0) {
-            size_t new_size = (*capacity) + BUFFER_SIZE;
-            void *tmp = realloc((*buffer), new_size);
-            if (!tmp) {
-                throw_error(MEMORY_ALLOCATION, "Erreur reallocation dans receive_from");
-                return -2;
-            }
-            (*buffer) = tmp;
-            (*capacity) = new_size;
-            remaining = BUFFER_SIZE;
-        }
-
-        bytes = recv(fd, (*buffer) + (*size), remaining, 0);
-
-        if (bytes > 0) {
-            (*size) += bytes;
-            continue;
-        }
-
-        if (bytes == 0) {
-            return -1;
-        }
-
-        if (errno == EAGAIN || errno == EWOULDBLOCK) {
-            break;
-        }
-
-        perror("recv");
-        return -2;
+    // Initialiser la capacité si elle n'est pas définie
+    if (b->capacity == 0) {
+        b->capacity = MAX_BUFFER_SIZE;
     }
 
-    if ((*size) < (*capacity))
-        (*buffer)[(*size)] = '\0';
-
-    // info_log("[TCP] Reçu %d octets du client fd=%d", (*size), fd);
-    return (*size);
+    ssize_t bytes = recv(fd, b->buffer + b->size, b->capacity - b->size - 1, 0);
+    
+    if (bytes < 0) {
+        // Erreur de réception
+        return -2;
+    }
+    
+    if (bytes == 0) {
+        // Connexion fermée
+        return -1;
+    }
+    
+    b->size += bytes;
+    b->buffer[b->size] = '\0';
+    
+    return b->size;
 }
 
 int server_receive_from(server *s, int i) {
     client *client = clist_get(s->clients, i);
+    if (!client) return 0;
 
     int fd = client->fd;
     if (fd < 0) return 0;
 
-    int res = receive_from(fd, &(s->buffer), &(s->current_size), &(s->size_buffer));
+    int res = receive_from(fd, &client->buffer_cl);
 
     if(res == -1){
         info_log("[TCP] Client %d closed connection.", i);
+    } else if(res == -2){
+        info_log("[TCP] Client %d error.", i);
+        return 0;
     }
 
     return res;
@@ -190,9 +174,16 @@ void server_client_procedure(server *s){
             client_destroy(cl);
             continue;
         }
-        if(resp > 0){
-            handle_request(s, s->buffer, (client *)clist_get(s->clients, i));
+        client *cl = (client *)clist_get(s->clients, i);
+        if(resp > 0 && request_available(&cl->buffer_cl)){
+            char *request = get_request(&cl->buffer_cl);
+            if(request){
+                handle_request(s, request, cl);
+                update_buffer(&cl->buffer_cl, strlen(request));
+                free(request);
+            }
         }
+        reset_full_buffer(&cl->buffer_cl);
         i++;
     }
 }
