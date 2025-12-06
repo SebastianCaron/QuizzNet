@@ -7,9 +7,13 @@
 
 #include "error.h"
 
+/* Log file handle and mutex for thread-safe writing */
 static FILE *log_file = NULL;
 static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+/**
+ * @brief Internal enum for log message types.
+ */
 typedef enum{
     DEBUG,
     INFO,
@@ -17,11 +21,13 @@ typedef enum{
 } print_type;
 
 int init_debug_log(void) {
+    /* Generate filename with current timestamp */
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
 
     char filename[64];
     strftime(filename, sizeof(filename), "%Y_%m_%d_%H_%M_%S.log", t);
+
     log_file = fopen(filename, "a");
     if (!log_file) {
         perror("fopen");
@@ -37,11 +43,17 @@ void close_debug_log(void) {
     }
 }
 
+/**
+ * @brief Prints the log prefix to console with colored tag and timestamp.
+ * 
+ * @param type The type of message (DEBUG, INFO, or ERROR).
+ */
 void print_console(print_type type){
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
     char time_buf[32];
     strftime(time_buf, sizeof(time_buf), "%Y-%m-%d %H:%M:%S", t);
+
     switch (type)
     {
     case DEBUG:
@@ -59,21 +71,35 @@ void print_console(print_type type){
     }
 }
 
-void log_cf(print_type type, const char *fmt,va_list args) {
+/**
+ * @brief Core logging function that writes to console and file.
+ * 
+ * Handles formatted output with timestamp to both console (colored)
+ * and log file (plain text). Thread-safe for file writes.
+ * 
+ * @param type The type of message (DEBUG, INFO, or ERROR).
+ * @param fmt Format string (printf-style).
+ * @param args Variable argument list.
+ */
+void log_cf(print_type type, const char *fmt, va_list args) {
     if (!fmt) return;
 
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
     char time_buf[32];
     strftime(time_buf, sizeof(time_buf), "%Y-%m-%d %H:%M:%S", t);
+
+    /* Print colored output to console */
     print_console(type);
 
+    /* Copy args since we need to use them twice (console + file) */
     va_list args_copy;
     va_copy(args_copy, args);
 
     vprintf(fmt, args);
     printf("\n");
 
+    /* Write to log file with mutex protection */
     if (log_file) {
         pthread_mutex_lock(&log_mutex);
         fprintf(log_file, "[%s] ", time_buf);
@@ -86,6 +112,11 @@ void log_cf(print_type type, const char *fmt,va_list args) {
     va_end(args_copy);
 }
 
+/**
+ * @brief Prints an optional message in yellow.
+ * 
+ * @param optional_msg Message to print, or NULL for just a newline.
+ */
 void print_msg(const char *optional_msg){
     if(optional_msg == NULL){
         printf("\n");
@@ -93,8 +124,6 @@ void print_msg(const char *optional_msg){
     }
     printf(YELLOW("%s\n"), optional_msg);
 }
-
-
 
 void debug_log(const char *fmt, ...) {
     if (!fmt) return;
@@ -107,6 +136,7 @@ void debug_log(const char *fmt, ...) {
 
 void info_log(const char *fmt, ...) {
     if (!fmt) return;
+
     va_list args;
     va_start(args, fmt);
     log_cf(INFO, fmt, args);
@@ -115,20 +145,22 @@ void info_log(const char *fmt, ...) {
 
 void error_log(const char *fmt, ...) {
     if (!fmt) return;
+
     va_list args;
     va_start(args, fmt);
     log_cf(ERROR, fmt, args);
     va_end(args);
 }
 
-
-
 void throw_error(errors error_code, const char *optional_string){
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
     char time_buf[32];
     strftime(time_buf, sizeof(time_buf), "%Y-%m-%d %H:%M:%S", t);
+
     print_console(ERROR);
+
+    /* Convert error code to string */
     char *_to_write;
     switch (error_code)
     {
@@ -185,9 +217,12 @@ void throw_error(errors error_code, const char *optional_string){
         _to_write = "";
         break;
     }
+
+    /* Print error to console */
     printf("%s", _to_write);
     print_msg(optional_string);
     
+    /* Write to log file with mutex protection */
     if (log_file) {
         pthread_mutex_lock(&log_mutex);
         fprintf(log_file, "[%s] ", time_buf);
@@ -195,6 +230,4 @@ void throw_error(errors error_code, const char *optional_string){
         fflush(log_file);
         pthread_mutex_unlock(&log_mutex);
     }
-
 }
-

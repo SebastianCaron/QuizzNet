@@ -1,7 +1,14 @@
+#include <stdlib.h>
+
 #include "db.h"
 #include "sql_content.h"
 #include "../errors/error.h"
 
+/**
+ * @brief Creates the themes table if it doesn't exist.
+ * 
+ * @param s Pointer to the server.
+ */
 void init_table_theme(server *s){
     
     // Init of the THEMES table
@@ -12,11 +19,14 @@ void init_table_theme(server *s){
             "name VARCHAR(100) NOT NULL"
         ")"
     );
-
     sqlite_result_destroy(result);
-
 }
 
+/**
+ * @brief Creates the clients table if it doesn't exist.
+ * 
+ * @param s Pointer to the server.
+ */
 void init_table_clients(server *s){
     
     // Init of the CLIENTS table
@@ -28,12 +38,14 @@ void init_table_clients(server *s){
             "password VARCHAR(255) NOT NULL"
         ")"
     );
-
     sqlite_result_destroy(result);
 }
 
-
-
+/**
+ * @brief Creates the questions table if it doesn't exist.
+ * 
+ * @param s Pointer to the server.
+ */
 void init_table_questions(server *s){
     
     // Init of the QUESTIONS table
@@ -48,11 +60,14 @@ void init_table_questions(server *s){
             "explanation VARCHAR(500)"
         ")"
     );
-
     sqlite_result_destroy(result);
-
 }
 
+/**
+ * @brief Creates the questions_in_themes junction table if it doesn't exist.
+ * 
+ * @param s Pointer to the server.
+ */
 void init_table_theme_quest(server *s){
     
     // Init of the THEME-QUESTIONS table
@@ -64,11 +79,15 @@ void init_table_theme_quest(server *s){
             "PRIMARY KEY(id_question, id_theme)"
         ")"
     );
-
     sqlite_result_destroy(result);
-
 }
 
+/**
+ * @brief Checks if the database already has content.
+ * 
+ * @param s Pointer to the server.
+ * @return 1 if themes table has data, 0 otherwise.
+ */
 int db_has_content(server *s){
     SqliteResult *result = exec_query(s, "SELECT COUNT(*) FROM themes");
     int has_content = 0;
@@ -82,15 +101,24 @@ int db_has_content(server *s){
     return has_content;
 }
 
+/**
+ * @brief Loads initial content from SQL_CONTENT into the database.
+ * 
+ * Parses the SQL_CONTENT string and executes each statement
+ * separated by semicolons.
+ * 
+ * @param s Pointer to the server.
+ */
 void load_content(server *s){
     char query[4096] = {'\0'};
-
     char *all_query = SQL_CONTENT;
 
     int i = 0;
     int j = 0;
     int nb = 0;
     SqliteResult *result;
+
+    /* Parse and execute each SQL statement */
     while(all_query[i] != '\0'){
         if(j >= 4095){
             throw_error(DATABASE_PREPARE, "Query too long (max 4096 characters)");
@@ -98,9 +126,10 @@ void load_content(server *s){
         }
         query[j] = all_query[i];
         j++;
+
+        /* Execute statement when semicolon is found */
         if(query[j-1] == ';'){
             query[j] = '\0';
-            // debug_log("Query %d: %s\n",nb, query);
             result = exec_query(s, query);
             sqlite_result_destroy(result);
             j = 0;
@@ -108,16 +137,18 @@ void load_content(server *s){
         }
         i++;
     }
-
 }
 
 void init_db(server *s){
     debug_log("INITIALISATION DE LA DB.");
+
+    /* Create all tables */
     init_table_theme(s);
     init_table_clients(s);
     init_table_questions(s);
     init_table_theme_quest(s);
     
+    /* Load content if database is empty */
     if(!db_has_content(s)){
         debug_log("BASE DE DONNEES VIDE, CHARGEMENT DU CONTENU...");
         load_content(s);

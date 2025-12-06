@@ -6,6 +6,7 @@
 #include "db.h"
 
 void add_sqlite_to_server(server *s){
+    /* Open or create the database file */
     int rc = sqlite3_open("test.db", &(s->db)); // sqlite3_open(":memory:", &db);
 
     if (rc != SQLITE_OK) {
@@ -20,15 +21,18 @@ SqliteResult *exec_query(server *s, char *sql) {
         throw_error(MEMORY_ALLOCATION, "Erreur allocation memoire dans exec_select");
         return NULL;
     }
+
     sqlite3_stmt *stmt;
     int rc;
 
+    /* Prepare the SQL statement */
     rc = sqlite3_prepare_v2(s->db, sql, -1, &stmt, 0);
     if (rc != SQLITE_OK) {
         throw_error(DATABASE_PREPARE, sqlite3_errmsg(s->db));
         return res;
     }
 
+    /* Extract column names */
     res->column_count = sqlite3_column_count(stmt);
     res->column_names = calloc(res->column_count, sizeof(char *));
 
@@ -37,6 +41,7 @@ SqliteResult *exec_query(server *s, char *sql) {
         res->column_names[i] = strdup(name ? name : "");
     }
 
+    /* Allocate initial row storage */
     int capacity = SQLITE_RESULT_BLOCK_SIZE;
     res->rows = calloc(capacity, sizeof(char **));
     if(!res->rows){
@@ -45,12 +50,15 @@ SqliteResult *exec_query(server *s, char *sql) {
         return res;
     }
 
+    /* Fetch all rows */
     while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+        /* Grow row array if needed */
         if (res->row_count >= capacity) {
             capacity += SQLITE_RESULT_BLOCK_SIZE;
             res->rows = realloc(res->rows, capacity * sizeof(char **));
         }
 
+        /* Allocate and populate row data */
         char **row = calloc(res->column_count, sizeof(char *));
         if(!row){
             throw_error(MEMORY_ALLOCATION, "Erreur allocation memoire pour une ligne dans exec_select");
@@ -73,15 +81,17 @@ SqliteResult *exec_query(server *s, char *sql) {
 
 void sqlite_result_destroy(SqliteResult *res){
     if(!res) return;
-    int i = 0;
-    for(i = 0; i < res->row_count; i++){
+    
+    /* Free all row data */
+    for(int i = 0; i < res->row_count; i++){
         for(int j = 0; j < res->column_count; j++){
             free(res->rows[i][j]);
         }
         free(res->rows[i]);
     }
 
-    for(i = 0; i < res->column_count; i++){
+    /* Free column names */
+    for(int i = 0; i < res->column_count; i++){
         free(res->column_names[i]);
     }
     free(res->column_names);

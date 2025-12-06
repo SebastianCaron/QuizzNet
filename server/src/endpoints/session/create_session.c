@@ -9,12 +9,15 @@
 int post_session_create(server* s, char* request, client *cl){
     int retour_snp;
     char response[1024] = {'\0'};
+
+    /* Allocate new session */
     session* new_session = malloc(sizeof(session));
     if(!new_session){
         throw_error(MEMORY_ALLOCATION, "Erreur allocation session_create : new session");
         return 1;
     }
 
+    /* Parse JSON request */
     cJSON *json = cJSON_Parse(request);
     if (json == NULL) {
         const char *error_ptr = cJSON_GetErrorPtr();
@@ -26,6 +29,7 @@ int post_session_create(server* s, char* request, client *cl){
         return 1;
     }
     
+    /* Initialize session from JSON parameters */
     new_session->id = s->session_counter++;
     new_session->name = get_from_json_string(json, "name");
     new_session->themes_ids = get_from_json_int_array(json, "themesIds");
@@ -34,9 +38,11 @@ int post_session_create(server* s, char* request, client *cl){
     new_session->time_limit = get_from_json_int(json, "timeLimit");
     new_session->type = get_session_type(get_from_json_string(json, "mode"));
     new_session->nb_lives = new_session->type == BATTLE ? 4 : 0;
-    new_session->nb_players = 1; // 1 = the creator of the session. When someone disconnect, -1
+    new_session->nb_players = 1;  /* Creator counts as first player */
     new_session->max_nb_players = get_from_json_int(json, "maxPlayers");
     new_session->status = WAITING;
+
+    /* Initialize players list */
     new_session->players = clist_init();
     if(!(new_session->players)){
         throw_error(MEMORY_ALLOCATION, "Erreur allocation session_create : new_session -> client");
@@ -45,20 +51,23 @@ int post_session_create(server* s, char* request, client *cl){
         return 1;
     }
     
-    // Si le client est déjà dans une session, le retirer de l'ancienne
+    /* Remove client from previous session if any */
     if(cl->infos_session.session){
         session_remove_client(cl->infos_session.session, cl);
     }
     
+    /* Add creator to session */
     clist_append(new_session->players, cl);
     cl->infos_session.session = new_session;
     cl->infos_session.is_creator = 1;
     new_session->server = s;
     
+    /* Register session with server */
     clist_append(s->sessions, new_session);
 
+    /* Build response based on game mode */
     if (new_session->type == CLASSIC){
-        retour_snp = snprintf(response,1023,"{"
+        retour_snp = snprintf(response, 1023, "{"
         "   \"action\":\"session/create\",\n"
         "   \"statut\":\"201\",\n"
         "   \"message\":\"session created\",\n"
@@ -70,13 +79,14 @@ int post_session_create(server* s, char* request, client *cl){
         "   }"
         "}", new_session->id);
 
-        if (retour_snp<0){
+        if (retour_snp < 0){
             throw_error(ENCODING_ERROR, "Erreur snprintf create session CLASSIC");
             return 1;
         }
 
     } else {
-        retour_snp = snprintf(response,1023,"{"
+        /* BATTLE mode includes lives count */
+        retour_snp = snprintf(response, 1023, "{"
         "   \"action\":\"session/create\",\n"
         "   \"statut\":\"201\",\n"
         "   \"message\":\"session created\",\n"
@@ -89,7 +99,7 @@ int post_session_create(server* s, char* request, client *cl){
         "   }"
         "}", new_session->id, new_session->nb_lives);
 
-        if (retour_snp<0){
+        if (retour_snp < 0){
             throw_error(ENCODING_ERROR, "Erreur snprintf create session BATTLE");
             return 1;
         }

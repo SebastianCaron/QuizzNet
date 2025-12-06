@@ -14,11 +14,12 @@ client *client_init(int fd){
         return NULL;
     }
 
+    /* Initialize client with default values */
     res->fd = fd;
-    res->connected = 0;
-    res->infos_session.lives = NB_LIVES;
+    res->connected = 0;                    /* Not authenticated yet */
+    res->infos_session.lives = NB_LIVES;   /* Full lives for elimination mode */
     
-    // Initialiser le buffer
+    /* Initialize the receive buffer */
     res->buffer_cl.capacity = MAX_BUFFER_SIZE;
     res->buffer_cl.size = 0;
     memset(res->buffer_cl.buffer, 0, MAX_BUFFER_SIZE + 1);
@@ -29,6 +30,7 @@ client *client_init(int fd){
 void client_destroy(client *c){
     if(!c) return;
 
+    /* Close socket and free memory */
     close(c->fd);
     free(c);
 }
