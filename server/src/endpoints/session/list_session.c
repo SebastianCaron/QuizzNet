@@ -7,6 +7,13 @@
 #include "../../game_logic/session.h"
 #include "../endpoints.h"
 
+/**
+ * @brief Retrieves a theme name from the database by ID.
+ * 
+ * @param s Pointer to the server.
+ * @param theme_id Theme ID to look up.
+ * @return Newly allocated string with theme name, or NULL if not found.
+ */
 char* get_theme_name(server *s, int theme_id) {
     char query[256];
     SqliteResult *result;
@@ -26,6 +33,14 @@ char* get_theme_name(server *s, int theme_id) {
     return theme_name;
 }
 
+/**
+ * @brief Ensures the buffer has enough capacity, reallocating if needed.
+ * 
+ * @param buffer Pointer to buffer pointer (may be reallocated).
+ * @param current_size Pointer to current buffer size.
+ * @param needed_size Minimum required size.
+ * @return 0 on success, 1 on allocation failure.
+ */
 int ensure_buffer_size(char **buffer, int *current_size, int needed_size) {
     if (needed_size >= *current_size) {
         int new_size = *current_size * 2;
@@ -53,6 +68,8 @@ int get_session_list(server* s, char* request, client *cl){
     }
     
     int nb_session = clist_size(s->sessions);
+
+    /* Build JSON response header */
     int retour_snp = snprintf(response, buffer_size - 1, "{"
         "   \"action\":\"sessions/list\",\n"
         "   \"statut\":\"200\",\n"
@@ -60,7 +77,7 @@ int get_session_list(server* s, char* request, client *cl){
         "   \"nbSessions\": %d",
         nb_session);
 
-    if (retour_snp<0){
+    if (retour_snp < 0){
         throw_error(ENCODING_ERROR, "Erreur snprintf list session");
         free(response);
         return 1;
@@ -68,6 +85,8 @@ int get_session_list(server* s, char* request, client *cl){
 
     int size = 0;
     int needed = 0;
+
+    /* Add sessions array if any sessions exist */
     if(nb_session > 0){
         size = strlen(response);
         needed = size + 50;
@@ -77,12 +96,13 @@ int get_session_list(server* s, char* request, client *cl){
         }
         
         retour_snp = snprintf(response + size, buffer_size - size - 1, ",\n   \"sessions\": [\n");
-        if (retour_snp<0){
+        if (retour_snp < 0){
             throw_error(ENCODING_ERROR, "Erreur snprintf list session");
             free(response);
             return 1;
         }
         
+        /* Iterate through all sessions */
         for(int i = 0; i < nb_session; i++){
             session *sess = (session *)clist_get(s->sessions, i);
             if (!sess) continue;
@@ -90,6 +110,7 @@ int get_session_list(server* s, char* request, client *cl){
             size = strlen(response);
             char session_json[4096] = {'\0'};
             
+            /* Build session object */
             retour_snp = snprintf(session_json, sizeof(session_json), "{\n"
                 "   \"id\": %d,\n"
                 "   \"name\": \"%s\",\n",
@@ -103,6 +124,7 @@ int get_session_list(server* s, char* request, client *cl){
             
             int len = strlen(session_json);
             
+            /* Add theme IDs array */
             len += snprintf(session_json + len, sizeof(session_json) - len, "   \"themeIds\": [");
             
             int nb_themes = 0;
@@ -121,6 +143,7 @@ int get_session_list(server* s, char* request, client *cl){
             
             len += snprintf(session_json + len, sizeof(session_json) - len, "],\n");
             
+            /* Add theme names array */
             len += snprintf(session_json + len, sizeof(session_json) - len, "   \"themeNames\": [");
             
             for (int j = 0; j < nb_themes; j++) {
@@ -138,6 +161,7 @@ int get_session_list(server* s, char* request, client *cl){
             
             len += snprintf(session_json + len, sizeof(session_json) - len, "],\n");
             
+            /* Add remaining session properties */
             len += snprintf(session_json + len, sizeof(session_json) - len,
                 "   \"difficulty\":\"%s\",\n"
                 "   \"nbQuestions\":%d,\n"
@@ -161,6 +185,7 @@ int get_session_list(server* s, char* request, client *cl){
                 return 1;
             }
             
+            /* Ensure buffer can hold the session JSON */
             size = strlen(response);
             int remaining = buffer_size - size - 1;
             
@@ -181,6 +206,7 @@ int get_session_list(server* s, char* request, client *cl){
                 return 1;
             }
             
+            /* Add comma between sessions */
             if (i < nb_session - 1) {
                 size = strlen(response);
                 if (size < buffer_size - 2) {
@@ -200,6 +226,7 @@ int get_session_list(server* s, char* request, client *cl){
             }
         }
         
+        /* Close sessions array */
         size = strlen(response);
         needed = size + 50;
         if (ensure_buffer_size(&response, &buffer_size, needed) != 0) {
@@ -215,6 +242,7 @@ int get_session_list(server* s, char* request, client *cl){
         }
     }
     
+    /* Close JSON object */
     size = strlen(response);
     needed = size + 10;
     if (ensure_buffer_size(&response, &buffer_size, needed) != 0) {

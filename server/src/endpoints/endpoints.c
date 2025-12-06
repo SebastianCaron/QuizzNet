@@ -13,6 +13,12 @@
 #include "./themes/get_themes_list.h"
 #include "./session/list_session.h"
 
+/**
+ * @brief Checks if a character is valid for a route path.
+ * 
+ * @param letter Character to check.
+ * @return 1 if valid (A-Z, a-z, /, space, _), 0 otherwise.
+ */
 char is_valid_char(char letter){
     return (letter >= 'A' && letter <= 'Z') || (letter >= 'a' && letter <= 'z') || letter == '/' || letter == ' ' || letter == '_';
 }
@@ -20,12 +26,14 @@ char is_valid_char(char letter){
 endpoints get_endpoint(char *request){
     if(!request) return INVALID_ENDPOINT;
 
+    /* Find end of route string */
     int i = 0;
     while(is_valid_char(request[i])){
         i++;
     }
     i--;
     // ADD ENDPOINT ROUTE FROM HERE
+    /* Match route to endpoint */
     if(!strncmp("POST player/register", request, i)) return POST_PLAYER_REGISTER;
     if(!strncmp("POST player/login", request, i)) return POST_PLAYER_LOGIN;
     if(!strncmp("POST session/create", request, i)) return POST_SESSION_CREATE;
@@ -61,12 +69,12 @@ void send_response(client *cl, char *response){
     write(cl->fd, response, strlen(response));
 }
 
-
 void handle_request(server *s, char *request, client *cl){
     endpoints ep = get_endpoint(request);
     debug_log("ENDPOINTS: %d", ep);
     debug_log("Request : %s", request);
-    // HANDLE ROUTE HERE
+    // HANDLE ROUTE FROM HERE
+    /* Dispatch to appropriate handler */
     switch (ep)
     {
     case POST_PLAYER_REGISTER:
@@ -85,6 +93,7 @@ void handle_request(server *s, char *request, client *cl){
         get_session_list(s, request, cl);
         break;
     
+    /* These endpoints are handled in-game, not from main server */
     case POST_JOKER_USE:
     case POST_QUESTION_ANSWER:
     case INVALID_ENDPOINT:

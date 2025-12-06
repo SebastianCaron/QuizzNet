@@ -1,7 +1,4 @@
-#include <stdlib.h>
-
 #include "list.h"
-#include "../errors/error.h"
 
 list *list_init(){
     list *l = calloc(1, sizeof(list));

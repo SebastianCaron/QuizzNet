@@ -4,6 +4,7 @@
 
 int post_session_start(server* s, char* request, client *cl){
     
+    /* Only session creator can start the session */
     if(!cl->infos_session.is_creator){
         char *response =
         "{"
@@ -14,9 +15,11 @@ int post_session_start(server* s, char* request, client *cl){
         send_response(cl, response);
         return 1;
     }
+
     int i = 0;
     session *_session = cl->infos_session.session;
     
+    /* Require at least 2 players to start */
     if(_session->nb_players < 2){
         char *response =
         "{"
@@ -28,14 +31,18 @@ int post_session_start(server* s, char* request, client *cl){
         return 1;
     }
 
+    /* Remove all players from main server loop (they'll be handled by session thread) */
     int players_size = clist_size(_session->players);
     for(i = 0; i < players_size; i++){
-        remove_client_from_server_procedure(s, clist_get(_session->players, i)); // PEUT ETRE OPTI
+        remove_client_from_server_procedure(s, clist_get(_session->players, i));
     }
 
+    /* Create game session thread */
     pthread_t udp_thread;
     if (pthread_create(&udp_thread, NULL, handle_session, _session) != 0) {
         throw_error(THREAD_CREATION, "Erreur creation du thread.");
+
+        /* Re-attach players to server on failure */
         for(i = 0; i < players_size; i++){
             attach_client_to_server_procedure(s, clist_get(_session->players, i));
         }

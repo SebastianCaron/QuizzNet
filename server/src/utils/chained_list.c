@@ -1,7 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "../errors/error.h"
 #include "chained_list.h"
 
 chained_list *clist_init() {
