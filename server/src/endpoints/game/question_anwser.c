@@ -9,23 +9,27 @@
 void post_question_answer(session *s, char *request, client *cl) {
     if(!s || !cl) return;
     
+    /* Cannot answer twice */
     if(cl->infos_session.has_answered) {
         send_invalid_response(cl);
         return;
     }
     
+    /* Parse JSON request */
     cJSON *json = cJSON_Parse(request);
     if(!json) {
         send_invalid_response(cl);
         return;
     }
     
+    /* Extract response time if provided */
     float response_time = 0.0;
     cJSON *response_time_item = cJSON_GetObjectItemCaseSensitive(json, "responseTime");
     if(response_time_item && cJSON_IsNumber(response_time_item)) {
         response_time = (float)response_time_item->valuedouble;
     }
     
+    /* Get the answer */
     cJSON *answer_item = cJSON_GetObjectItemCaseSensitive(json, "answer");
     if(!answer_item) {
         cJSON_Delete(json);
@@ -35,7 +39,9 @@ void post_question_answer(session *s, char *request, client *cl) {
     
     question_type q_type = s->current_question.type;
     
+    /* Process answer based on question type */
     if(q_type == QCM) {
+        /* QCM: expect integer index */
         if(cJSON_IsNumber(answer_item)) {
             int answer_index = answer_item->valueint;
             cl->infos_session.player_answer.answer_other = (char)answer_index;
@@ -46,6 +52,7 @@ void post_question_answer(session *s, char *request, client *cl) {
             return;
         }
     } else if(q_type == TRUEFALSE) {
+        /* True/False: expect boolean */
         if(cJSON_IsTrue(answer_item)) {
             cl->infos_session.player_answer.answer_other = 1;
             strcpy(cl->infos_session.player_answer.answer_text, "");
@@ -58,6 +65,7 @@ void post_question_answer(session *s, char *request, client *cl) {
             return;
         }
     } else if(q_type == FREETEXT) {
+        /* Free text: expect string */
         if(cJSON_IsString(answer_item) && answer_item->valuestring) {
             strncpy(cl->infos_session.player_answer.answer_text, 
                    answer_item->valuestring, 
@@ -75,9 +83,11 @@ void post_question_answer(session *s, char *request, client *cl) {
         return;
     }
     
+    /* Record response time and mark as answered */
     cl->infos_session.player_answer.response_time = response_time;
     cl->infos_session.has_answered = 1;
     
+    /* Build success response */
     cJSON *response_json = cJSON_CreateObject();
     cJSON_AddStringToObject(response_json, "action", "question/answer");
     cJSON_AddStringToObject(response_json, "statut", "200");

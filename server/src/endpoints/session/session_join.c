@@ -13,6 +13,8 @@ int post_session_join(server* s, char* request, client *cl){
     client* player;
     char response[1024] = {'\0'};
     char response_other_players[1024] = {'\0'};
+
+    /* Parse JSON request */
     cJSON *json = cJSON_Parse(request);
     if (json == NULL) {
         const char *error_ptr = cJSON_GetErrorPtr();
@@ -23,6 +25,7 @@ int post_session_join(server* s, char* request, client *cl){
         return 1;
     }
 
+    /* Find the session to join */
     session_to_join = get_session_by_id(s->sessions, get_from_json_int(json, "sessionId"));
     if(!session_to_join){
         char *response_full =
@@ -35,7 +38,7 @@ int post_session_join(server* s, char* request, client *cl){
             return 0;
     }
 
-    // Si le client est déjà dans cette session, retourner une erreur
+    /* Check if client is already in this session */
     if(cl->infos_session.session == session_to_join){
         char *response_full =
             "{"
@@ -48,6 +51,7 @@ int post_session_join(server* s, char* request, client *cl){
         return 0;
     }
     
+    /* Check if session is full */
     if (session_to_join->nb_players == session_to_join->max_nb_players){
             char *response_full =
             "{"
@@ -60,36 +64,39 @@ int post_session_join(server* s, char* request, client *cl){
             return 0;
     }
     
-    // Si le client est déjà dans une autre session, le retirer de l'ancienne
+    /* Remove client from previous session if any */
     if(cl->infos_session.session){
         session_remove_client(cl->infos_session.session, cl);
     }
     
+    /* Add client to session */
     clist_append(session_to_join->players, cl);
     session_to_join->nb_players++;
-    retour_snp = snprintf(response_other_players,1023,"{"
+
+    /* Build notification for other players */
+    retour_snp = snprintf(response_other_players, 1023, "{"
             "   \"pseudo\":\"%s\",\n"
             "   \"nbPlayers\":\"%d\",\n"
-            "}", cl->pseudo , session_to_join->nb_players);
+            "}", cl->pseudo, session_to_join->nb_players);
 
-    if (retour_snp<0){
+    if (retour_snp < 0){
         throw_error(ENCODING_ERROR, "Erreur snprintf join session response other players");
         return 1;
     }
 
-
     cl->infos_session.session = session_to_join;
-
     player_size = clist_size(session_to_join->players);
 
+    /* Determine session type string */
     char *session_type_str = "";
     if(session_to_join->type == CLASSIC){
         session_type_str = "solo";
-    }else{
+    } else {
         session_type_str = "battle";
     }
 
-    retour_snp = snprintf(response,1023,"{"
+    /* Build response header */
+    retour_snp = snprintf(response, 1023, "{"
         "   \"action\":\"session/join\",\n"
         "   \"statut\":\"201\",\n"
         "   \"message\":\"session joined\",\n"
@@ -98,24 +105,28 @@ int post_session_join(server* s, char* request, client *cl){
         "   \"isCreator\": false,\n"
         "   \"players\": [", session_to_join->id, session_type_str);
         
-    if (retour_snp<0){
+    if (retour_snp < 0){
         throw_error(ENCODING_ERROR, "Erreur snprintf join session");
         return 1;
     }
 
-    for (int i = 0; i<player_size; i++){
+    /* Add player list and notify each player */
+    for (int i = 0; i < player_size; i++){
         player = ((client *) (clist_get(session_to_join->players, i)));
         str_tmp = player->pseudo;
-        retour_snp = snprintf(response + strlen(response), sizeof(response) - strlen(response),"\"%s\"", str_tmp);
-        if (retour_snp<0){
+        retour_snp = snprintf(response + strlen(response), sizeof(response) - strlen(response), "\"%s\"", str_tmp);
+        if (retour_snp < 0){
             throw_error(ENCODING_ERROR, "Erreur snprintf join session CLASSIC");
             return 1;
         }
 
-        if((i+1)!=player_size) strcat(response, ",");
+        if((i + 1) != player_size) strcat(response, ",");
+
+        /* Notify existing player about new player */
         send_response(player, response_other_players);
     }
 
+    /* Complete response based on game mode */
     if (session_to_join->type == CLASSIC){
         strcat(response, "],\n"
         "   \"jokers\":{\n"
@@ -124,6 +135,7 @@ int post_session_join(server* s, char* request, client *cl){
         "   }"
         "}");
     } else {
+        /* BATTLE mode includes lives */
         snprintf(response + strlen(response), sizeof(response) - strlen(response), "],\n"
         "   \"lives\": %d,\n"
         "   \"jokers\":{\n"

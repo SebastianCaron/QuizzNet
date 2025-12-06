@@ -11,7 +11,9 @@
 int post_player_login(server *s, char *request, client *cl){
     char query[1024] = {'\0'};
 
+    /* Skip to JSON body */
     while(request && (request[0] != '{' && request[0] != '\0')) request++;
+
     cJSON *json = cJSON_Parse(request);
     if (json == NULL) {
         const char *error_ptr = cJSON_GetErrorPtr();
@@ -22,6 +24,7 @@ int post_player_login(server *s, char *request, client *cl){
         return 1;
     }
     
+    /* Extract credentials */
     char *pseudo = get_from_json_string(json, "pseudo");
     char *password = get_from_json_string(json, "password");
 
@@ -31,9 +34,8 @@ int post_player_login(server *s, char *request, client *cl){
         return 1;
     }
 
-    // TODO: Hash password
-    snprintf(query, 1023, "SELECT password FROM clients WHERE pseudo = '%s';", 
-       pseudo);
+    /* Query database for user's password hash */
+    snprintf(query, 1023, "SELECT password FROM clients WHERE pseudo = '%s';", pseudo);
 
     SqliteResult *res = exec_query(s, query);
     if(!res){
@@ -43,6 +45,7 @@ int post_player_login(server *s, char *request, client *cl){
         return 1;
     }
 
+    /* Check if user exists */
     if(res->row_count == 0){
         char *response =
         "{"
@@ -55,6 +58,8 @@ int post_player_login(server *s, char *request, client *cl){
         send_response(cl, response);
         return 1;
     }
+
+    /* Verify password hash */
     char *hash_pass = (char *) hash_password(password);
     if(strcmp(res->rows[0][0], hash_pass)){
         char *response =
@@ -69,10 +74,13 @@ int post_player_login(server *s, char *request, client *cl){
         sqlite_result_destroy(res);
         return 1;
     }
+
+    /* Cleanup */
     free(hash_pass);
     sqlite_result_destroy(res);
     cJSON_Delete(json);
     
+    /* Send success response */
     char *response =
     "{"
     "   \"action\":\"player/login\",\n"

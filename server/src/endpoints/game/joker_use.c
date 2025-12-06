@@ -10,11 +10,13 @@
 void post_joker_use(session *s, char *request, client *cl) {
     if(!s || !cl) return;
     
+    /* Cannot use joker after answering */
     if(cl->infos_session.has_answered) {
         send_invalid_response(cl);
         return;
     }
     
+    /* Parse JSON request */
     cJSON *json = cJSON_Parse(request);
     if(!json) {
         send_invalid_response(cl);
@@ -28,20 +30,26 @@ void post_joker_use(session *s, char *request, client *cl) {
         return;
     }
     
+    /* Handle 50/50 joker */
     if(strcmp(joker_type, "fifty") == 0) {
+        /* Check if joker is available */
         if(cl->infos_session.joker_5050 == 0) {
             cJSON_Delete(json);
             send_invalid_response(cl);
             return;
         }
+
+        /* 50/50 only works for QCM questions */
         if(s->current_question.type != QCM) {
             cJSON_Delete(json);
             send_invalid_response(cl);
             return;
         }
         
+        /* Mark joker as used */
         cl->infos_session.joker_5050 = 0;
         
+        /* Parse original answers */
         cJSON *original_answers = cJSON_Parse(s->current_question.answer);
         if(!original_answers || !cJSON_IsArray(original_answers)) {
             cJSON_Delete(json);
@@ -50,6 +58,7 @@ void post_joker_use(session *s, char *request, client *cl) {
             return;
         }
         
+        /* First answer is always correct */
         cJSON *correct_answer_item = cJSON_GetArrayItem(original_answers, 0);
         if(!correct_answer_item || !cJSON_IsString(correct_answer_item)) {
             cJSON_Delete(json);
@@ -67,6 +76,7 @@ void post_joker_use(session *s, char *request, client *cl) {
             return;
         }
         
+        /* Pick one random wrong answer to keep */
         int other_index = 1 + (rand() % (size - 1));
         cJSON *other_item = cJSON_GetArrayItem(original_answers, other_index);
         if(!other_item || !cJSON_IsString(other_item)) {
@@ -76,6 +86,7 @@ void post_joker_use(session *s, char *request, client *cl) {
             return;
         }
         
+        /* Build remaining answers array */
         cJSON *remaining_answers = cJSON_CreateArray();
         if(remaining_answers) {
             cJSON_AddItemToArray(remaining_answers, 
@@ -84,14 +95,17 @@ void post_joker_use(session *s, char *request, client *cl) {
             cJSON_AddItemToArray(remaining_answers, 
                 cJSON_CreateString(other_item->valuestring));
             
+            /* Shuffle so correct answer isn't always first */
             shuffle_cjson_array(remaining_answers);
             
+            /* Build response */
             cJSON *response_json = cJSON_CreateObject();
             cJSON_AddStringToObject(response_json, "action", "joker/use");
             cJSON_AddStringToObject(response_json, "statut", "200");
             cJSON_AddStringToObject(response_json, "message", "joker activated");
             cJSON_AddItemToObject(response_json, "remainingAnswers", remaining_answers);
             
+            /* Add remaining jokers info */
             cJSON *jokers_obj = cJSON_CreateObject();
             cJSON_AddNumberToObject(jokers_obj, "fifty", cl->infos_session.joker_5050);
             cJSON_AddNumberToObject(jokers_obj, "skip", cl->infos_session.joker_pass);
@@ -115,23 +129,29 @@ void post_joker_use(session *s, char *request, client *cl) {
         
         cJSON_Delete(original_answers);
         
+    /* Handle skip joker */
     } else if(strcmp(joker_type, "skip") == 0) {
+        /* Check if joker is available */
         if(cl->infos_session.joker_pass == 0) {
             cJSON_Delete(json);
             send_invalid_response(cl);
             return;
         }
         
+        /* Mark joker as used */
         cl->infos_session.joker_pass = 0;
 
+        /* Mark as answered (skipped) */
         cl->infos_session.has_answered = 1;
         cl->infos_session.skip = 1;
 
+        /* Build response */
         cJSON *response_json = cJSON_CreateObject();
         cJSON_AddStringToObject(response_json, "action", "joker/use");
         cJSON_AddStringToObject(response_json, "statut", "200");
         cJSON_AddStringToObject(response_json, "message", "question skipped");
         
+        /* Add remaining jokers info */
         cJSON *jokers_obj = cJSON_CreateObject();
         cJSON_AddNumberToObject(jokers_obj, "fifty", cl->infos_session.joker_5050);
         cJSON_AddNumberToObject(jokers_obj, "skip", cl->infos_session.joker_pass);
@@ -147,6 +167,7 @@ void post_joker_use(session *s, char *request, client *cl) {
         
         cJSON_Delete(response_json);
     } else {
+        /* Unknown joker type */
         cJSON_Delete(json);
         send_invalid_response(cl);
         return;

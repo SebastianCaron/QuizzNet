@@ -51,6 +51,12 @@ const char* session_status_to_string(session_status s) {
     }
 }
 
+/**
+ * @brief Checks if all active players have answered the current question.
+ * 
+ * @param s Pointer to the session.
+ * @return 1 if everyone answered, 0 otherwise.
+ */
 char has_everyone_answered(session *s){
     client *c;
     for(int i = 0; i < clist_size(s->players); i++){
@@ -60,6 +66,12 @@ char has_everyone_answered(session *s){
     return 1;
 }
 
+/**
+ * @brief Checks if at least one player is still alive.
+ * 
+ * @param s Pointer to the session.
+ * @return 1 if someone is alive, 0 if everyone is dead.
+ */
 char is_everyone_dead(session *s){
     client *c;
     for(int i = 0; i < clist_size(s->players); i++){
@@ -69,9 +81,14 @@ char is_everyone_dead(session *s){
     return 0;
 }
 
+/**
+ * @brief Sends the session start notification to all players.
+ * 
+ * @param s Pointer to the session.
+ */
 void send_session_start(session *s){
     char response[1024] = {'\0'};
-    snprintf(response,sizeof(response), "POST session/started\n"
+    snprintf(response, sizeof(response), "POST session/started\n"
     "{"
     "   \"message\":\"session is starting\",\n"
     "   \"cooldown\": %d,\n"
@@ -82,6 +99,12 @@ void send_session_start(session *s){
     }
 }
 
+/**
+ * @brief Creates a set of random question IDs for the session.
+ * 
+ * @param s Pointer to the session.
+ * @return Array of question IDs, or NULL on error.
+ */
 int *create_question_set(session *s){
     int *res = calloc(s->nb_questions, sizeof(int));
     if(!res){
@@ -89,6 +112,7 @@ int *create_question_set(session *s){
         return res;
     }
     
+    /* Convert session difficulty to database format */
     int db_difficulty = (int)s->difficulty + 1;
     int difficulties[1] = {db_difficulty};
     
@@ -97,6 +121,11 @@ int *create_question_set(session *s){
     return res;
 }
 
+/**
+ * @brief Resets player answer states for a new question.
+ * 
+ * @param s Pointer to the session.
+ */
 void reset_session_players(session *s){
     for(int i = 0; i < clist_size(s->players); i++){
         client *c = (client *)clist_get(s->players, i);
@@ -114,36 +143,43 @@ void *handle_session(void *args){
 
     question q;
 
+    /* Generate question set for the session */
     int *question_ids = create_question_set(_session);
     int nb_remaining_question = _session->nb_questions;
 
+    /* Send start notification and wait for cooldown */
     send_session_start(_session);
     
     for (int i = 0; i < SESSION_START_COOLDOWN && !state->should_stop; i++) {
         sleep(1);
     }
     
+    /* Check for server shutdown */
     if (state->should_stop) {
         free(question_ids);
         session_destroy(_session);
         return NULL;
     }
 
-    // BOUCLE DE JEU
+    /* Main game loop */
     int current_question;
     int question_num = 0;
     while(!is_everyone_dead(_session) && nb_remaining_question > 0 && !state->should_stop){
 
+        /* Get current question from database */
         current_question = question_ids[_session->nb_questions - nb_remaining_question];
         get_question(_session->server, current_question, &q);
         
         _session->current_question = q;
         
+        /* Reset player states for new question */
         reset_session_players(_session);
         
+        /* Send question to all players */
         question_num = _session->nb_questions - nb_remaining_question + 1;
         send_session_question(_session, &q, question_num);
 
+        /* Wait for answers with time limit */
         time_t start_time = time(NULL);
         int time_limit_seconds = _session->time_limit;
         
@@ -151,10 +187,12 @@ void *handle_session(void *args){
             time_t current_time = time(NULL);
             time_t elapsed_time = current_time - start_time;
             
+            /* Time limit reached */
             if(elapsed_time >= time_limit_seconds) {
                 break;
             }
             
+            /* Poll for player responses */
             for(int i = clist_size(_session->players) - 1; i >= 0; i--){
                 client *p = (client *)clist_get(_session->players, i);
                 if(p && p->infos_session.has_answered == 0) {
@@ -162,22 +200,25 @@ void *handle_session(void *args){
                 }
             }
             
-            usleep(2000);
+            usleep(2000);  /* Small delay to avoid busy waiting */
         }
 
         if (state->should_stop) {
             break;
         }
 
+        /* Calculate and send results */
         send_session_results(_session, question_num);
 
         nb_remaining_question--;
 
+        /* Cooldown between questions */
         for (int i = 0; i < cooldown_question && !state->should_stop; i++) {
             sleep(1);
         }
     }
 
+    /* Send final results if game completed normally */
     if (!state->should_stop) {
         send_session_finished(_session);
     }
@@ -188,6 +229,15 @@ void *handle_session(void *args){
     return NULL;
 }
 
+/**
+ * @brief Handles in-game requests from a player.
+ * 
+ * Routes joker usage and answer submissions to appropriate handlers.
+ * 
+ * @param s Pointer to the session.
+ * @param request The request string.
+ * @param p Pointer to the player client.
+ */
 void handle_request_session(session *s, char *request, client *p){
     endpoints ep = get_endpoint(request);
     switch (ep)
@@ -200,6 +250,7 @@ void handle_request_session(session *s, char *request, client *p){
         post_question_answer(s, request, p);
         break;
 
+    /* These endpoints are not valid during a game */
     case POST_PLAYER_REGISTER:
     case POST_PLAYER_LOGIN:
     case POST_SESSION_CREATE:
@@ -221,6 +272,7 @@ void session_remove_client(session *s, client *cl){
     int client_index = clist_find(s->players, cl);
     if(client_index == -1) return;
     
+    /* Transfer creator role if creator is leaving */
     if(cl->infos_session.is_creator && clist_size(s->players) > 1){
         for(int i = 0; i < clist_size(s->players); i++){
             client *other_client = (client *)clist_get(s->players, i);
@@ -231,12 +283,15 @@ void session_remove_client(session *s, client *cl){
         }
     }
     
+    /* Remove from session */
     clist_remove(s->players, cl);
     s->nb_players--;
     
+    /* Clear client session info */
     cl->infos_session.session = NULL;
     cl->infos_session.is_creator = 0;
     
+    /* Destroy empty sessions that aren't playing */
     if(clist_size(s->players) == 0 && s->status != PLAYING){
         clist_remove(s->server->sessions, s);
         session_destroy(s);
@@ -248,20 +303,24 @@ void session_receive_for_player(session *s, int i){
     
     client *p = clist_get(s->players, i);
     if(!p) return;
+
     int res = receive_from(p->fd, &p->buffer_cl);
 
+    /* Handle disconnection */
     if(res == -1){
         session_remove_client(s, p);
         client_destroy(p);
         return;
     }
     
+    /* Handle error */
     if(res == -2){
         session_remove_client(s, p);
         client_destroy(p);
         return;
     }
 
+    /* Process complete requests */
     if(res > 0 && request_available(&p->buffer_cl)){
         char *request = get_request(&p->buffer_cl);
         if(request){
@@ -279,6 +338,7 @@ void session_destroy(session *s){
     free(s->name);
     free(s->themes_ids);
 
+    /* Re-attach all players to main server loop */
     int players_nb = clist_size(s->players);
     for(int i = 0; i < players_nb; i++){
         attach_client_to_server_procedure(s->server, clist_get(s->players, i));
@@ -288,10 +348,9 @@ void session_destroy(session *s){
     free(s);
 }
 
-// Searching for the session with the corresponding id
 session* get_session_by_id(chained_list* l_sessions, int id_session){
     session* session_trouvee;
-    for (int i = 0; i<clist_size(l_sessions); i++){
+    for (int i = 0; i < clist_size(l_sessions); i++){
         if ((session_trouvee = clist_get(l_sessions, i))->id == id_session) return session_trouvee;
     }
     return NULL;
