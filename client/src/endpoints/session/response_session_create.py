@@ -3,7 +3,6 @@ from src.session.session_infos import info_session
 from gui.windows.waiting_room import WaitingRoomPage
 
 def response_session_create(message, app):
-    print("\n-------------JE SUIS PASSE PAR LA YIHOU----------------\n")
     try:
         json_message = json.loads(message)
     except:
@@ -19,7 +18,7 @@ def response_session_create(message, app):
         info_session.set_creator()
 
         page = app.frames[WaitingRoomPage]
-        page.update_players(info_session.players, is_creator=True)
+        page.update_players(info_session.get_players(), is_creator=True)
 
         app.show_page(WaitingRoomPage)
 

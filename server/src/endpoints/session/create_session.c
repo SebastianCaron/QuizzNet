@@ -54,7 +54,7 @@ int post_session_create(server* s, char* request, client *cl){
         "   \"jokers\":{\n"
         "      \"fifty\": 1,\n"
         "      \"skip\": 1\n"
-        "   }"
+        "   }\n"
         "}", new_session->id);
 
         if (retour_snp<0){

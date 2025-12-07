@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+from gui.windows.liste_session import SessionListPage
 
 class WaitingRoomPage(tk.Frame):
     def __init__(self, app):
@@ -53,4 +54,5 @@ class WaitingRoomPage(tk.Frame):
 
     def quit_session(self):
         #self.app.tcp_client.send("POST session/left\n{}")
-        self.app.show_page("SessionListPage")
+        #TODO : endpoint left session in server AND handeler in client
+        self.app.show_page(SessionListPage)

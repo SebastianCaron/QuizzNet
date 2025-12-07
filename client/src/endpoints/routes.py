@@ -20,6 +20,7 @@ from src.endpoints.session.response_session_started import response_session_star
 
 def message_route(message, app):
     print("------PASSE PAR LA DEBUT MESSAGE : \n", message, "\nFIN MESSAGE------\n")
+    
     if message.startswith('POST question/results'):
         return
     if message.startswith('POST session/player/eliminated'):

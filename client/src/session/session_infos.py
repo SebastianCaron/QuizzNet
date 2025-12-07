@@ -14,6 +14,9 @@ class InfoSession:
         self.lives = -1 #if -1 -> not displayed not used, classic mode
         self.is_creator = False
 
+    def get_players(self):
+        return self.players_score.keys()
+    
     def get_players_score(self, pseudo):
         return self.players_score[pseudo]
     
