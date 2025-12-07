@@ -1,14 +1,15 @@
 import json
 from src.session.session_infos import info_session 
-from gui.windows.liste_session import SessionListPage
+from gui.windows.waiting_room import WaitingRoomPage
 
 def response_session_create(message, app):
-    try :
+    print("\n-------------JE SUIS PASSE PAR LA YIHOU----------------\n")
+    try:
         json_message = json.loads(message)
     except:
         return "ERROR JSON"
 
-    if json_message["statut"]=="201":
+    if json_message["statut"] == "201":
         if "lives" in json_message:
             info_session.set_nb_lives(json_message["lives"])
 
@@ -16,10 +17,11 @@ def response_session_create(message, app):
         info_session.set_joker_fifty = dict_nb_joker["fifty"]
         info_session.set_joker_pass = dict_nb_joker["skip"]
         info_session.set_creator()
-        app.tcp_client.send("GET sessions/list")
 
-        #passer à la salle d'attente. Comme il est créateur, seul lui peut démarrer
-        # VOIR COMMENT GERER SI CREATEUR LEFT AVANT DEBUT DE LA SESSION
+        page = app.frames[WaitingRoomPage]
+        page.update_players(info_session.players, is_creator=True)
+
+        app.show_page(WaitingRoomPage)
+
     else:
         app.show_error_banner("Impossible de créer la session")
-    

@@ -7,7 +7,7 @@ def response_player_register(message, app):
     except:
         return "ERROR JSON"
 
-    if json_message["statut"]=="200":
+    if json_message["statut"]=="201":
         app.update()
         time.sleep(0.1)
         app.tcp_client.send("GET session/list")

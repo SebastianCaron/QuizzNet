@@ -22,20 +22,20 @@ class SessionCreatePage(tk.Frame):
         self.difficulty.grid(row=1, column=1, pady=5)
 
         tk.Label(form, text="Nombre de questions").grid(row=2, column=0, sticky="w")
-        self.nb_questions = tk.Spinbox(form, from_=5, to=50, width=5)
+        self.nb_questions = tk.Spinbox(form, from_=10, to=50, width=5)
         self.nb_questions.grid(row=2, column=1, pady=5)
 
         tk.Label(form, text="Temps limite (s)").grid(row=3, column=0, sticky="w")
-        self.time_limit = tk.Spinbox(form, from_=5, to=120, width=5)
+        self.time_limit = tk.Spinbox(form, from_=10, to=60, width=5)
         self.time_limit.grid(row=3, column=1, pady=5)
 
         tk.Label(form, text="Mode").grid(row=4, column=0, sticky="w")
-        self.mode = ttk.Combobox(form, values=["solo", "multi"])
+        self.mode = ttk.Combobox(form, values=["solo", "battle"])
         self.mode.current(0)
         self.mode.grid(row=4, column=1, pady=5)
 
         tk.Label(form, text="Joueurs max").grid(row=5, column=0, sticky="w")
-        self.max_players = tk.Spinbox(form, from_=1, to=10, width=5)
+        self.max_players = tk.Spinbox(form, from_=2, to=8, width=5)
         self.max_players.grid(row=5, column=1, pady=5)
 
         tk.Label(self, text="Choisir les thèmes :", font=("Arial", 10)).pack(pady=5)
@@ -90,16 +90,19 @@ class SessionCreatePage(tk.Frame):
             messagebox.showwarning("Erreur", "Sélectionnez au moins un thème.")
             return
 
-        payload = {
-            "name": name,
-            "themeIds": selected_theme_ids,
-            "difficulty": self.difficulty.get(),
-            "nbQuestions": int(self.nb_questions.get()),
-            "timeLimit": int(self.time_limit.get()),
-            "mode": self.mode.get(),
-            "maxPlayers": int(self.max_players.get())
-        }
-        msg = f"POST session/create\n{payload}"
-        print("Message envoyé au serveur:", repr(msg))
 
-        self.app.tcp_client.send(msg)
+        message = (
+            "POST session/create\n"
+            "{\n"
+            f'  "name":"{name}",\n'
+            f'  "themeIds":{selected_theme_ids},\n'
+            f'  "difficulty":"{self.difficulty.get()}",\n'
+            f'  "nbQuestions":{int(self.nb_questions.get())},\n'
+            f'  "timeLimit":{int(self.time_limit.get())},\n'
+            f'  "mode":"{self.mode.get()}",\n'
+            f'  "maxPlayers":{int(self.max_players.get())}\n'
+            "}\n"
+        )
+        print("Message envoyé au serveur:", repr(message))
+
+        self.app.tcp_client.send(message)

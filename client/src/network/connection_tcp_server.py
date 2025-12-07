@@ -59,7 +59,7 @@ class TCPClient:
                         message = msg_bytes.decode("utf-8").strip()
                         print("Server sended:", message)
                         if self.app:
-                            self.app.handle_server_message(message)
+                            self.app.after(0, self.app.handle_server_message, message)
                     except Exception as e:
                         print(f"Error decoding message: {e}")
             except socket.timeout:

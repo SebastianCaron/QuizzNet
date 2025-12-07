@@ -155,7 +155,7 @@ int server_receive_from(server *s, int i) {
     if(res == -1){
         info_log("[TCP] Client %d closed connection.", i);
     } else if(res == -2){
-        info_log("[TCP] Client %d error.", i);
+        //info_log("[TCP] Client %d error.", i);
         return 0;
     }
 

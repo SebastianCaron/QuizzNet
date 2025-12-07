@@ -56,6 +56,8 @@ class InfoSession:
     def unset_player(self, pseudo):
         if not self.session_started:
             del self.players_score[pseudo]
+        else :
+            self.update_score(pseudo, -1)
 
     def is_creator(self):
         return self.is_creator

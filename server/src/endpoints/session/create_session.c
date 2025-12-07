@@ -14,6 +14,7 @@ int post_session_create(server* s, char* request, client *cl){
         return 1;
     }
 
+    while(request && (request[0] != '{' && request[0] != '\0')) request++;
     cJSON *json = cJSON_Parse(request);
     if (json == NULL) {
         const char *error_ptr = cJSON_GetErrorPtr();
@@ -26,7 +27,7 @@ int post_session_create(server* s, char* request, client *cl){
     
     new_session->id = s->session_counter++;
     new_session->name = get_from_json_string(json, "name");
-    new_session->themes_ids = get_from_json_int_array(json, "themesIds");
+    new_session->themes_ids = get_from_json_int_array(json, "themeIds");
     new_session->difficulty = get_session_difficulty(get_from_json_string(json, "difficulty"));
     new_session->nb_questions = get_from_json_int(json, "nbQuestions");
     new_session->time_limit = get_from_json_int(json, "timeLimit");

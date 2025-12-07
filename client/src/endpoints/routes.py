@@ -19,20 +19,21 @@ from src.endpoints.session.response_session_started import response_session_star
 
 
 def message_route(message, app):
+    print("------PASSE PAR LA DEBUT MESSAGE : \n", message, "\nFIN MESSAGE------\n")
     if message.startswith('POST question/results'):
         return
     if message.startswith('POST session/player/eliminated'):
-        response_player_eliminated(message)
+        response_player_eliminated(message, app)
     if message.startswith('POST session/finished'):
         return
     if message.startswith('POST session/player/left'):
         return
     if message.startswith('POST session/started'):
-        response_session_started(message)
+        response_session_started(message, app)
     if message.startswith('POST question/new'):
-        response_question_new(message)
+        response_question_new(message, app)
     if message.startswith('POST session/player/joined'):
-        response_session_player_join(message)
+        response_session_player_join(message, app)
     if message.startswith('POST'):
         return "MESSAGE INCONNU AU BATAILLON"
     
@@ -57,12 +58,12 @@ def message_route(message, app):
         case "sessions/list":
             response_session_list(message, app)
         case "session/create":
-            response_session_create(message)
+            response_session_create(message, app)
         case "session/join":
-            response_session_join(message)
+            response_session_join(message, app)
         case "joker/use":
-            response_joker_used(message)
+            response_joker_used(message, app)
         case "question/answer":
-            response_question_answered(message)
+            response_question_answered(message, app)
         case _:
             print("INCONNU")

@@ -4,7 +4,7 @@ from gui.windows.select_server import SelectServer
 from gui.windows.login_page import LoginPage
 from gui.windows.liste_session import SessionListPage
 from gui.windows.create_session import SessionCreatePage
-
+from gui.windows.waiting_room import WaitingRoomPage
 from src.endpoints.routes import message_route
 
 class MainInterfaceClient(tk.Tk):
@@ -22,7 +22,7 @@ class MainInterfaceClient(tk.Tk):
         self.frames = {}
 
         #Init all the different pages
-        for F in (SearchingServer, SelectServer, LoginPage, SessionListPage, SessionCreatePage):
+        for F in (SearchingServer, SelectServer, LoginPage, SessionListPage, SessionCreatePage, WaitingRoomPage):
             frame = F(self)
             self.frames[F] = frame
             frame.place(relwidth=1, relheight=1)
@@ -38,7 +38,7 @@ class MainInterfaceClient(tk.Tk):
             frame.on_show()
 
     def handle_server_message(self, message):
-        print("Message serveur reçu dans Tkinter :", message)
+        print("-----------Message serveur reçu dans Tkinter :", message)
         try:
             message_route(message, self)
         except Exception as e:
