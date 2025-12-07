@@ -16,5 +16,3 @@ def response_session_join(message):
     dict_nb_joker = json_message["jokers"]
     info_session.set_joker_fifty = dict_nb_joker["fifty"]
     info_session.set_joker_pass = dict_nb_joker["skip"]
-
-    #passer à la salle d'attente de la session

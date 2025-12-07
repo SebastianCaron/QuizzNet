@@ -16,7 +16,6 @@ class TCPClient:
         self.gui_callback = None
         self.app = app
 
-    # Connexion
     def connect(self) -> bool:
         """Try to establish a tcp connection with the server"""
         try:
@@ -42,7 +41,6 @@ class TCPClient:
             self.is_connected = False
             return False
 
-    # Listening
     def _listen_server(self):
         buffer = b""
         while self.running and self.is_connected:
@@ -71,7 +69,6 @@ class TCPClient:
                 self.disconnect()
                 break
 
-    # Sendind messages
     def send(self, message: str):
         """Send a message to the server"""
         if not self.is_connected or self.sock is None:
@@ -85,7 +82,6 @@ class TCPClient:
             print(f"Send failed: {e}")
             self.disconnect()
 
-    # Disconnect
     def disconnect(self):
         """Disconnect to the server"""
         if self.sock:

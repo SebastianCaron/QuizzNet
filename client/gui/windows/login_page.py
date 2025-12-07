@@ -6,25 +6,20 @@ class LoginPage(tk.Frame):
         super().__init__(app)
         self.app = app
 
-        # --- UI elements ---
         title = tk.Label(self, text="Connexion / Inscription", font=("Arial", 22))
         title.pack(pady=20)
 
-        # Username field
         tk.Label(self, text="Nom d'utilisateur").pack()
         self.username_entry = tk.Entry(self, width=30)
         self.username_entry.pack(pady=5)
 
-        # Password field
         tk.Label(self, text="Mot de passe").pack()
         self.password_entry = tk.Entry(self, show="*", width=30)
         self.password_entry.pack(pady=5)
 
-        # Status label
         self.status = tk.Label(self, text="", fg="red")
         self.status.pack(pady=10)
 
-        # Buttons
         btn_frame = tk.Frame(self)
         btn_frame.pack(pady=10)
 
@@ -33,10 +28,6 @@ class LoginPage(tk.Frame):
 
         register_btn = tk.Button(btn_frame, text="S'inscrire", command=self.register)
         register_btn.grid(row=0, column=1, padx=10)
-
-    # ----------------------------------------------------------
-    # ACTIONS
-    # ----------------------------------------------------------
 
     def login(self):
         username = self.username_entry.get().strip()
@@ -80,7 +71,6 @@ class LoginPage(tk.Frame):
         print("Message envoyé au serveur:", repr(message))
         self.status.config(text="Inscription en cours...")
 
-    # Appelée quand Tk raise la page
     def on_show(self):
         self.status.config(text="")
         self.username_entry.delete(0, tk.END)

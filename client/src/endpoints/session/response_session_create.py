@@ -8,7 +8,6 @@ def response_session_create(message, app):
     except:
         return "ERROR JSON"
 
-    #afficher message de la réponse puis wait 2sec, sans changer niveau graphique
     if json_message["statut"]=="201":
         if "lives" in json_message:
             info_session.set_nb_lives(json_message["lives"])

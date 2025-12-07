@@ -21,7 +21,7 @@ class MainInterfaceClient(tk.Tk):
 
         self.frames = {}
 
-        #Init pages
+        #Init all the different pages
         for F in (SearchingServer, SelectServer, LoginPage, SessionListPage, SessionCreatePage):
             frame = F(self)
             self.frames[F] = frame
@@ -29,7 +29,7 @@ class MainInterfaceClient(tk.Tk):
 
         self.show_page(SearchingServer)
 
-    # Show a specific page
+    # Shows a specific page
     def show_page(self, page_class):
         self.current_page = page_class
         frame = self.frames[page_class]
