@@ -19,6 +19,7 @@ int post_session_create(server* s, char* request, client *cl){
 
     while(request && (request[0] != '{' && request[0] != '\0')) request++;
     /* Parse JSON request */
+    while(request && (request[0] != '{' && request[0] != '\0')) request++;
     cJSON *json = cJSON_Parse(request);
     if (json == NULL) {
         const char *error_ptr = cJSON_GetErrorPtr();
