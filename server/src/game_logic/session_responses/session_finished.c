@@ -123,7 +123,7 @@ void send_session_finished(session *s){
     char *json_string = cJSON_Print(response_json);
     if(json_string) {
         char response[4096] = {'\0'};
-        snprintf(response, sizeof(response), "POST session/finished\n%s", json_string);
+        snprintf(response, sizeof(response), "POST session/finished\n%s\n\n", json_string);
         
         for(int i = 0; i < nb_players; i++) {
             client *c = players_array[i];

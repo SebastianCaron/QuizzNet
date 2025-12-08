@@ -100,7 +100,7 @@ void send_session_question(session *s, question *q, int question_num){
 
     /* Build response with route */
     char response[2048] = {'\0'};
-    int retour_snp = snprintf(response, sizeof(response), "POST question/new\n%s", json_string);
+    int retour_snp = snprintf(response, sizeof(response), "POST question/new\n%s\n\n", json_string);
     
     if(retour_snp < 0 || retour_snp >= (int)sizeof(response)) {
         free(json_string);

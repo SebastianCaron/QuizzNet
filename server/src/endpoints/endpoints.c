@@ -12,6 +12,7 @@
 #include "./session/start_session.h"
 #include "./themes/get_themes_list.h"
 #include "./session/list_session.h"
+#include "./session/session_join.h"
 
 /**
  * @brief Checks if a character is valid for a route path.
@@ -37,6 +38,7 @@ endpoints get_endpoint(char *request){
     if(!strncmp("POST player/register", request, i)) return POST_PLAYER_REGISTER;
     if(!strncmp("POST player/login", request, i)) return POST_PLAYER_LOGIN;
     if(!strncmp("POST session/create", request, i)) return POST_SESSION_CREATE;
+    if(!strncmp("POST session/join", request, i)) return POST_SESSION_JOIN;
     if(!strncmp("POST session/start", request, i)) return POST_SESSION_START;
     if(!strncmp("GET themes/list", request, i)) return GET_THEMES_LIST;
     if(!strncmp("GET session/list", request, i)) return GET_SESSION_LIST;
@@ -51,7 +53,7 @@ void send_invalid_response(client *cl){
     "{\n"
     "   \"statut\":\"400\",\n"
     "   \"message\": \"Bad request\"\n"
-    "}\n";
+    "}\n\n";
     send_response(cl, response);
 }
 
@@ -60,7 +62,7 @@ void send_error_response(client *cl){
     "{\n"
     "   \"statut\":\"520\",\n"
     "   \"message\": \"Unknown Error\"\n"
-    "}\n";
+    "}\n\n";
     send_response(cl, response);
 }
 
@@ -86,6 +88,9 @@ void handle_request(server *s, char *request, client *cl){
         break;
     case POST_SESSION_CREATE:
         post_session_create(s, request, cl);
+        break;
+    case POST_SESSION_JOIN:
+        post_session_join(s, request, cl);
         break;
     case GET_THEMES_LIST:
         get_themes_list(s, request, cl);

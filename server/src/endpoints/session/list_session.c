@@ -250,7 +250,7 @@ int get_session_list(server* s, char* request, client *cl){
         return 1;
     }
     
-    snprintf(response + size, buffer_size - size - 1, "\n}");
+    snprintf(response + size, buffer_size - size - 1, "\n}\n\n");
     
     send_response(cl, response);
     free(response);

@@ -52,7 +52,7 @@ class TCPClient:
                    break
                 buffer+=message
                 while b"\n}" in buffer:
-                    idx = buffer.find(b"\n}") + 2
+                    idx = buffer.find(b"}\n\n") + 3
                     msg_bytes = buffer[:idx]
                     buffer = buffer[idx:]
                     try:

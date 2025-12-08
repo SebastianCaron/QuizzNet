@@ -29,6 +29,7 @@ typedef enum {
     POST_PLAYER_REGISTER,   /**< POST player/register - Create new account */
     POST_PLAYER_LOGIN,      /**< POST player/login - Authenticate user */
     POST_SESSION_CREATE,    /**< POST session/create - Create game session */
+    POST_SESSION_JOIN,      /**< POST session/join - Join game session */
     POST_SESSION_START,     /**< POST session/start - Start a game session */
     GET_SESSION_LIST,       /**< GET session/list - List available sessions */
     GET_THEMES_LIST,        /**< GET themes/list - List quiz themes */

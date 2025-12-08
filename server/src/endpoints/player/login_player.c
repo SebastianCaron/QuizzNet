@@ -52,7 +52,7 @@ int post_player_login(server *s, char *request, client *cl){
         "   \"action\":\"player/login\",\n"
         "   \"statut\":\"401\",\n"
         "   \"message\":\"invalid credentials\"\n"
-        "}";
+        "}\n\n";
         cJSON_Delete(json);
         sqlite_result_destroy(res);
         send_response(cl, response);
@@ -67,7 +67,7 @@ int post_player_login(server *s, char *request, client *cl){
         "   \"action\":\"player/login\",\n"
         "   \"statut\":\"401\",\n"
         "   \"message\":\"invalid credentials\"\n"
-        "}";
+        "}\n\n";
         free(hash_pass);
         cJSON_Delete(json);
         send_response(cl, response);
@@ -80,13 +80,14 @@ int post_player_login(server *s, char *request, client *cl){
     sqlite_result_destroy(res);
     cJSON_Delete(json);
     
+    cl->pseudo = pseudo;
     /* Send success response */
     char *response =
     "{"
     "   \"action\":\"player/login\",\n"
     "   \"statut\":\"200\",\n"
     "   \"message\":\"login successful\"\n"
-    "}";
+    "}\n\n";
     send_response(cl, response);
     return 0;
 }

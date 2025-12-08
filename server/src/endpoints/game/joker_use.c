@@ -114,7 +114,7 @@ void post_joker_use(session *s, char *request, client *cl) {
             char *json_string = cJSON_Print(response_json);
             if(json_string) {
                 char response[2048] = {'\0'};
-                snprintf(response, sizeof(response), "%s", json_string);
+                snprintf(response, sizeof(response), "%s\n\n", json_string);
                 send_response(cl, response);
                 free(json_string);
             }
@@ -160,7 +160,7 @@ void post_joker_use(session *s, char *request, client *cl) {
         char *json_string = cJSON_Print(response_json);
         if(json_string) {
             char response[2048] = {'\0'};
-            snprintf(response, sizeof(response), "%s", json_string);
+            snprintf(response, sizeof(response), "%s\n\n", json_string);
             send_response(cl, response);
             free(json_string);
         }

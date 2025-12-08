@@ -92,7 +92,7 @@ void send_session_start(session *s){
     "{"
     "   \"message\":\"session is starting\",\n"
     "   \"cooldown\": %d,\n"
-    "}", SESSION_START_COOLDOWN);
+    "}\n\n", SESSION_START_COOLDOWN);
 
     for(int i = 0; i < clist_size(s->players); i++){
         send_response((client *)clist_get(s->players, i), response);

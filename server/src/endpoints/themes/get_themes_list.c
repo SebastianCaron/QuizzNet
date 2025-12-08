@@ -51,7 +51,7 @@ int get_themes_list(server *s, char *request, client *cl){
 
     /* Close JSON array and object */
     strcat(response, "  ]\n"
-    "}");
+    "}\n\n");
     
     send_response(cl, response);
     return 0;

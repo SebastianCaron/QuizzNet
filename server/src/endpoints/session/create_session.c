@@ -79,7 +79,7 @@ int post_session_create(server* s, char* request, client *cl){
         "      \"fifty\": 1,\n"
         "      \"skip\": 1\n"
         "   }\n"
-        "}", new_session->id);
+        "}\n\n", new_session->id);
 
         if (retour_snp < 0){
             throw_error(ENCODING_ERROR, "Erreur snprintf create session CLASSIC");
@@ -99,7 +99,7 @@ int post_session_create(server* s, char* request, client *cl){
         "      \"fifty\": 1,\n"
         "      \"skip\": 1\n"
         "   }"
-        "}", new_session->id, new_session->nb_lives);
+        "}\n\n", new_session->id, new_session->nb_lives);
 
         if (retour_snp < 0){
             throw_error(ENCODING_ERROR, "Erreur snprintf create session BATTLE");

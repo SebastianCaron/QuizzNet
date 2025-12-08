@@ -17,9 +17,14 @@ class SessionListPage(tk.Frame):
 
         tk.Button(btn_frame, text="Rejoindre", command=self.join_session).grid(row=0, column=0, padx=10)
         tk.Button(btn_frame, text="Créer une session", command=self.create_session).grid(row=0, column=1, padx=10)
+        tk.Button(btn_frame, text="Rafraichir", command=self.refresh).grid(row=0, column=2, padx=10)
 
         self.status = tk.Label(self, text="", fg="red")
         self.status.pack()
+
+    def refresh(self):
+        self.app.tcp_client.send("GET session/list")
+
 
     def update_sessions(self, sessions):
         self.sessions = sessions
@@ -28,9 +33,9 @@ class SessionListPage(tk.Frame):
         for session in sessions:
             sid = session["id"]
             name = session["name"]
-            players = session["players"]
-            maxp = session["max_players"]
-            self.listbox.insert(tk.END, f"{name} ({players}/{maxp}) — id:{sid}")
+            nbplayers = session["nbPlayers"]
+            maxp = session["maxPlayers"]
+            self.listbox.insert(tk.END, f"{name} ({nbplayers}/{maxp}) — id:{sid}")
 
     def join_session(self):
         idx = self.listbox.curselection()
@@ -41,8 +46,13 @@ class SessionListPage(tk.Frame):
         session = self.sessions[idx[0]]
         sid = session["id"]
 
-        msg = f"POST session/join\n{{\"session_id\":{sid}}}"
-        self.app.tcp_client.send(msg)
+        message = (
+            "POST session/join\n"
+            "{\n"
+            f'  "sessionId":{sid}\n'
+            "}\n"
+        )
+        self.app.tcp_client.send(message)
         self.status.config(text="Demande de connexion...")
 
     def create_session(self):

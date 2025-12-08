@@ -157,7 +157,7 @@ void send_player_eliminated(session *s, client *cl) {
     char *json_string = cJSON_Print(json);
     if(json_string) {
         char response[1024] = {'\0'};
-        snprintf(response, sizeof(response), "POST session/player/eliminated\n%s", json_string);
+        snprintf(response, sizeof(response), "POST session/player/eliminated\n%s\n\n", json_string);
         
         /* Notify all remaining players */
         for(int i = 0; i < clist_size(s->players); i++){
@@ -304,7 +304,7 @@ void send_session_results(session *s, int question_num) {
     char *json_string = cJSON_Print(response_json);
     if(json_string) {
         char response[4096] = {'\0'};
-        snprintf(response, sizeof(response), "POST question/results\n%s", json_string);
+        snprintf(response, sizeof(response), "POST question/results\n%s\n\n", json_string);
         
         for(int i = 0; i < clist_size(s->players); i++){
             client *c = (client *)clist_get(s->players, i);

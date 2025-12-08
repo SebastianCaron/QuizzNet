@@ -8,6 +8,7 @@ def response_session_player_join(message, app):
     except:
         return "ERROR JSON"
 
+
     info_session.set_new_player(json_message["pseudo"])
 
     page = app.frames[WaitingRoomPage]
