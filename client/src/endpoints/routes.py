@@ -24,17 +24,17 @@ def message_route(message, app):
     if message.startswith('POST question/results'):
         return
     if message.startswith('POST session/player/eliminated'):
-        response_player_eliminated(message, app)
+        response_player_eliminated("\n".join(message.splitlines()[1:]), app)
     if message.startswith('POST session/finished'):
         return
     if message.startswith('POST session/player/left'):
         return
     if message.startswith('POST session/started'):
-        response_session_started(message, app)
+        response_session_started("\n".join(message.splitlines()[1:]), app)
     if message.startswith('POST question/new'):
-        response_question_new(message, app)
+        response_question_new("\n".join(message.splitlines()[1:]), app)
     if message.startswith('POST session/player/joined'):
-        response_session_player_join(message, app)
+        response_session_player_join("\n".join(message.splitlines()[1:]), app)
     if message.startswith('POST'):
         return "MESSAGE INCONNU AU BATAILLON"
     

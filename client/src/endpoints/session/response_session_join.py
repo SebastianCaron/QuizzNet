@@ -15,11 +15,11 @@ def response_session_join(message, app):
         info_session.set_new_player(player)
 
     dict_nb_joker = json_message["jokers"]
-    info_session.set_joker_fifty = dict_nb_joker["fifty"]
-    info_session.set_joker_pass = dict_nb_joker["skip"]
+    info_session.set_joker_fifty(dict_nb_joker["fifty"])
+    info_session.set_joker_pass(dict_nb_joker["skip"])
 
     page = app.frames[WaitingRoomPage]
-    page.update_players(info_session.players, is_creator=False)
+    page.update_players(info_session.get_players(), is_creator=False)
 
     app.show_page(WaitingRoomPage)
 

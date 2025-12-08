@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "register_player.h"
 
@@ -73,10 +74,10 @@ int post_player_register(server *s, char *request, client *cl){
         return 1;
     }
 
+    cl->pseudo = strdup(pseudo);
     cJSON_Delete(json);
     sqlite_result_destroy(res);
 
-    cl->pseudo = pseudo;
     /* Send success response */
     char *response =
     "{"

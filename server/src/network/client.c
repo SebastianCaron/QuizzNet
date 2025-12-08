@@ -31,6 +31,7 @@ void client_destroy(client *c){
     if(!c) return;
 
     /* Close socket and free memory */
+    free(c->pseudo);
     close(c->fd);
     free(c);
 }

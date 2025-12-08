@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
+from src.session.session_infos import info_session 
+
 
 class LoginPage(tk.Frame):
     def __init__(self, app):
@@ -32,11 +34,11 @@ class LoginPage(tk.Frame):
     def login(self):
         username = self.username_entry.get().strip()
         password = self.password_entry.get().strip()
-
         if not username or not password:
             messagebox.showwarning("Erreur", "Veuillez remplir tous les champs.")
             return
 
+        info_session.set_pseudo(username)
         
         message = (
             "POST player/login\n"
@@ -53,11 +55,11 @@ class LoginPage(tk.Frame):
     def register(self):
         username = self.username_entry.get().strip()
         password = self.password_entry.get().strip()
-
         if not username or not password:
             messagebox.showwarning("Erreur", "Veuillez remplir tous les champs.")
             return
 
+        info_session.set_pseudo(username)
  
         message = (
             "POST player/register\n"

@@ -75,12 +75,12 @@ int post_player_login(server *s, char *request, client *cl){
         return 1;
     }
 
+    cl->pseudo = strdup(pseudo);
     /* Cleanup */
     free(hash_pass);
     sqlite_result_destroy(res);
     cJSON_Delete(json);
     
-    cl->pseudo = pseudo;
     /* Send success response */
     char *response =
     "{"

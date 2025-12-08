@@ -13,8 +13,8 @@ def response_session_create(message, app):
             info_session.set_nb_lives(json_message["lives"])
 
         dict_nb_joker = json_message["jokers"]
-        info_session.set_joker_fifty = dict_nb_joker["fifty"]
-        info_session.set_joker_pass = dict_nb_joker["skip"]
+        info_session.set_joker_fifty(dict_nb_joker["fifty"])
+        info_session.set_joker_pass(dict_nb_joker["skip"])
         info_session.set_creator()
 
         page = app.frames[WaitingRoomPage]

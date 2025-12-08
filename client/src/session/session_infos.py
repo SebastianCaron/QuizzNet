@@ -8,12 +8,19 @@
 class InfoSession:
     def __init__(self):
         self.session_started = False
-        self.players_score = {} # dico pseudo:score, First is the client player
+        self.pseudo = ""
+        self.players_score = {} # dico pseudo:score
         self.joker_fifty = 0 #just info to display the button
         self.joker_pass = 0 #same
         self.lives = -1 #if -1 -> not displayed not used, classic mode
         self.is_creator = False
 
+    def set_pseudo(self, pseudo):
+        self.pseudo = pseudo
+
+    def get_pseudo(self):
+        return self.pseudo
+    
     def get_players(self):
         return self.players_score.keys()
     
