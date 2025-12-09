@@ -42,7 +42,7 @@ class WaitingRoomPage(tk.Frame):
         elif is_creator:
             self.status_label.config(text="Prêt à démarrer !")
         else:
-            self.status_label.config(text="En attente que le créateur démarre...")
+            self.status_label.config(text="Seul le créateur peut démarrer la partie")
 
     def send_start_request(self):
         if self.players_listbox.size() < 2:
@@ -50,7 +50,7 @@ class WaitingRoomPage(tk.Frame):
             return
 
         print("POST session/start envoyé")
-        self.app.tcp_client.send("POST session/start\n{}")
+        self.app.tcp_client.send("POST session/start")
 
     def quit_session(self):
         #self.app.tcp_client.send("POST session/left\n{}")

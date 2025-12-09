@@ -135,7 +135,7 @@ int post_session_join(server* s, char* request, client *cl){
         "   \"jokers\":{\n"
         "      \"fifty\": 1,\n"
         "      \"skip\": 1\n"
-        "   }"
+        "   }\n"
         "}\n\n");
     } else {
         /* BATTLE mode includes lives */
@@ -144,7 +144,7 @@ int post_session_join(server* s, char* request, client *cl){
         "   \"jokers\":{\n"
         "      \"fifty\": 1,\n"
         "      \"skip\": 1\n"
-        "   }"
+        "   }\n"
         "}\n\n", session_to_join->nb_lives);
     }
 

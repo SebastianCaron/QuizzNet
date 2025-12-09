@@ -22,7 +22,7 @@ def message_route(message, app):
     print("------PASSE PAR LA DEBUT MESSAGE : \n", message, "\nFIN MESSAGE------\n")
     
     if message.startswith('POST question/results'):
-        return
+        response_question_new("\n".join(message.splitlines()[1:]), app)
     if message.startswith('POST session/player/eliminated'):
         response_player_eliminated("\n".join(message.splitlines()[1:]), app)
     if message.startswith('POST session/finished'):
@@ -44,9 +44,8 @@ def message_route(message, app):
     except:
         return "ERROR JSON"
     
-    if json_message["message"] == "Bad request":
-        print("NOT ACTION")
-        app.show_error_banner("Bad request")
+    if json_message["message"] == "Bad request" or json_message["message"] == "Unknown Error" :
+        print("Message d'erreur")
         return
     
     match json_message["action"]:

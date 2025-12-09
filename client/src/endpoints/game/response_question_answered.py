@@ -6,4 +6,4 @@ def response_question_answered(message):
     except:
         return "ERROR JSON"
     
-    #afficher le json_message["message"] sur la fenêtre actuelle
+    pass #TODO voir si y'a un truc intéressant à faire ici

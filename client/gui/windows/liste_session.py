@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+from src.session.session_infos import info_session  
 
 class SessionListPage(tk.Frame):
     def __init__(self, app):
@@ -30,6 +31,8 @@ class SessionListPage(tk.Frame):
         self.sessions = sessions
         self.listbox.delete(0, tk.END)
 
+        dico_timer = {}
+        dico_nbquest = {}
         for session in sessions:
             sid = session["id"]
             name = session["name"]
@@ -45,6 +48,9 @@ class SessionListPage(tk.Frame):
 
         session = self.sessions[idx[0]]
         sid = session["id"]
+        
+        info_session.set_time_limit(session["timeLimit"])
+        info_session.set_nb_questions(session["nbQuestions"])
 
         message = (
             "POST session/join\n"

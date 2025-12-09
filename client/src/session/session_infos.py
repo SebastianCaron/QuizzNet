@@ -9,12 +9,20 @@ class InfoSession:
     def __init__(self):
         self.session_started = False
         self.pseudo = ""
+        self.time_limit = 0
         self.players_score = {} # dico pseudo:score
         self.joker_fifty = 0 #just info to display the button
         self.joker_pass = 0 #same
         self.lives = -1 #if -1 -> not displayed not used, classic mode
+        self.nb_questions = 0
         self.is_creator = False
 
+    def set_time_limit(self, time):
+        self.time_limit = time
+    
+    def get_time_limit(self):
+        return self.time_limit
+    
     def set_pseudo(self, pseudo):
         self.pseudo = pseudo
 
@@ -43,7 +51,7 @@ class InfoSession:
         self.players_score[pseudo] = 0
 
     def update_score(self, pseudo, points):
-        self.players_score[pseudo] += points
+        self.players_score[pseudo] = points
 
     def use_joker_fifty(self):
         self.joker_fifty -= 1
@@ -53,7 +61,13 @@ class InfoSession:
 
     def set_nb_lives(self, nb_lives):
         self.lives = nb_lives
+
+    def get_nb_questions(self):
+        return self.nb_questions
     
+    def set_nb_questions(self, nb_questions):
+        self.nb_questions = nb_questions
+
     def lost_a_life(self):
         self.lives -=1 
 

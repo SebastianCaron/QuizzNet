@@ -5,6 +5,9 @@ from gui.windows.login_page import LoginPage
 from gui.windows.liste_session import SessionListPage
 from gui.windows.create_session import SessionCreatePage
 from gui.windows.waiting_room import WaitingRoomPage
+from gui.windows.countdown import CountdownPage
+from gui.windows.game_questions import QuestionPage
+from gui.windows.game_result_question import ResultsPage
 from src.endpoints.routes import message_route
 
 class MainInterfaceClient(tk.Tk):
@@ -22,7 +25,7 @@ class MainInterfaceClient(tk.Tk):
         self.frames = {}
 
         #Init all the different pages
-        for F in (SearchingServer, SelectServer, LoginPage, SessionListPage, SessionCreatePage, WaitingRoomPage):
+        for F in (SearchingServer, SelectServer, LoginPage, SessionListPage, SessionCreatePage, WaitingRoomPage, CountdownPage, QuestionPage,ResultsPage):
             frame = F(self)
             self.frames[F] = frame
             frame.place(relwidth=1, relheight=1)

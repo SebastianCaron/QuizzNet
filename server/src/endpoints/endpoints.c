@@ -92,6 +92,9 @@ void handle_request(server *s, char *request, client *cl){
     case POST_SESSION_JOIN:
         post_session_join(s, request, cl);
         break;
+    case POST_SESSION_START:
+        post_session_start(s, request, cl);
+        break;
     case GET_THEMES_LIST:
         get_themes_list(s, request, cl);
         break;
