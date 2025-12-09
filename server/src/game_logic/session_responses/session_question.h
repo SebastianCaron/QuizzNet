@@ -26,10 +26,12 @@
 void send_session_question(session *s, question *q, int question_num);
 
 /**
- * @brief Shuffles a cJSON array in place
+ * @brief Creates a shuffled copy of a cJSON string array.
  * 
  * Used to randomize answer order for QCM questions.
+ * The original array is not modified.
  * 
  * @param array cJSON array to shuffle.
+ * @return New shuffled cJSON array, or NULL on error. Caller must free with cJSON_Delete.
  */
-void shuffle_cjson_array(cJSON *array);
+cJSON *create_shuffled_array(cJSON *array);

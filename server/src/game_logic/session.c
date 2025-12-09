@@ -67,18 +67,18 @@ char has_everyone_answered(session *s){
 }
 
 /**
- * @brief Checks if at least one player is still alive.
+ * @brief Checks if all players are dead (no lives remaining).
  * 
  * @param s Pointer to the session.
- * @return 1 if someone is alive, 0 if everyone is dead.
+ * @return 1 if everyone is dead, 0 if at least one player is alive.
  */
 char is_everyone_dead(session *s){
     client *c;
     for(int i = 0; i < clist_size(s->players); i++){
         c = (client *)clist_get(s->players, i);
-        if(c->infos_session.lives > 0) return 1;
+        if(c->infos_session.lives > 0) return 0;  /* Someone is still alive */
     }
-    return 0;
+    return 1;  /* Everyone is dead */
 }
 
 /**
