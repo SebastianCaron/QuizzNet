@@ -8,14 +8,14 @@
 /**
  * @brief Converts an integer to a difficulty enum value.
  * 
- * @param diff_int Integer value (0=EASY, 1=MEDIUM, 2=HARD).
+ * @param diff_int Integer value (1=EASY, 2=MEDIUM, 3=HARD).
  * @return Corresponding difficulty enum value.
  */
 difficulty int_to_difficulty(int diff_int) {
     switch(diff_int) {
-        case 0: return EASY;
-        case 1: return MEDIUM;
-        case 2: return HARD;
+        case 1: return EASY;
+        case 2: return MEDIUM;
+        case 3: return HARD;
         default: return EASY;
     }
 }
@@ -23,14 +23,14 @@ difficulty int_to_difficulty(int diff_int) {
 /**
  * @brief Converts an integer to a question_type enum value.
  * 
- * @param type_int Integer value (0=QCM, 1=TRUEFALSE, 2=FREETEXT).
+ * @param type_int Integer value (1=TRUEFALSE, 2=QCM, 3=FREETEXT).
  * @return Corresponding question_type enum value.
  */
 question_type int_to_question_type(int type_int) {
     switch(type_int) {
-        case 0: return QCM;
         case 1: return TRUEFALSE;
-        case 2: return FREETEXT;
+        case 2: return QCM;
+        case 3: return FREETEXT;
         default: return QCM;
     }
 }

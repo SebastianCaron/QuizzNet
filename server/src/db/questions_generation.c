@@ -11,9 +11,9 @@ void get_random_question_ids(server *s, int size, int* tab, int nb_themes, int* 
     char number[64] = {'\0'};
 
     /* Build SELECT query with theme filter */
-    char *debut_query = "SELECT DISTINCT q.id FROM questions "
-                        "NATURAL JOIN question_in_theme "
-                        "NATURAL JOIN themes t "
+    char *debut_query = "SELECT DISTINCT q.id FROM questions q "
+                        "JOIN questions_in_themes qit ON q.id = qit.id_question "
+                        "JOIN themes t ON t.id = qit.id_theme "
                         "WHERE t.id IN (";
     strcat(query, debut_query);
 
@@ -41,14 +41,33 @@ void get_random_question_ids(server *s, int size, int* tab, int nb_themes, int* 
     }
 
     /* Add random ordering and limit */
-    strcat(query, ") ORDER BY RAND() LIMIT ");
+    strcat(query, ") ORDER BY RANDOM() LIMIT ");
     snprintf(number, sizeof(number), "%d", size);
     strcat(query, number);
+
+    printf("query: %s\n", query);
 
     /* Execute query and extract IDs */
     resquery = exec_query(s, query);
 
-    for (i = 0; i < size; i++){
+    if (!resquery || !resquery->rows) {
+        /* Query failed or returned no results */
+        for (i = 0; i < size; i++) {
+            tab[i] = -1;
+        }
+        return;
+    }
+    printf("resquery->row_count: %d\n", resquery->row_count);
+    /* Only extract as many IDs as available */
+    int available = resquery->row_count < size ? resquery->row_count : size;
+    for (i = 0; i < available; i++){
         tab[i] = atoi(resquery->rows[i][0]);
     }
+    
+    /* Mark remaining slots as invalid if not enough questions */
+    for (i = available; i < size; i++){
+        tab[i] = -1;
+    }
+    
+    sqlite_result_destroy(resquery);
 }
