@@ -172,11 +172,15 @@ int clist_remove(chained_list *l, void *data){
         if (current->data == data){
             if(prec){
                 prec->next = current->next;
-                free(current);
-                l->size--;
-                return 1;
+                if (current->next == NULL) {
+                    l->tail = prec;
+                }
+            } else {
+                l->head = current->next;
+                if (l->head == NULL) {
+                    l->tail = NULL;
+                }
             }
-            l->head = NULL;
             free(current);
             l->size--;
             return 1;
