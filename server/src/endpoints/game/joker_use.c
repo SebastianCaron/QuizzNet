@@ -87,16 +87,17 @@ void post_joker_use(session *s, char *request, client *cl) {
         }
         
         /* Build remaining answers array */
-        cJSON *remaining_answers = cJSON_CreateArray();
-        if(remaining_answers) {
-            cJSON_AddItemToArray(remaining_answers, 
+        cJSON *temp_answers = cJSON_CreateArray();
+        if(temp_answers) {
+            cJSON_AddItemToArray(temp_answers, 
                 cJSON_CreateString(correct_answer));
             
-            cJSON_AddItemToArray(remaining_answers, 
+            cJSON_AddItemToArray(temp_answers, 
                 cJSON_CreateString(other_item->valuestring));
             
             /* Shuffle so correct answer isn't always first */
-            shuffle_cjson_array(remaining_answers);
+            cJSON *remaining_answers = create_shuffled_array(temp_answers);
+            cJSON_Delete(temp_answers);
             
             /* Build response */
             cJSON *response_json = cJSON_CreateObject();
