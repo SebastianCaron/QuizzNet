@@ -33,8 +33,10 @@ int post_session_create(server* s, char* request, client *cl){
     
     /* Initialize session from JSON parameters */
     new_session->id = s->session_counter++;
-    new_session->name = get_from_json_string(json, "name");
+    char *name_str = get_from_json_string(json, "name");
+    new_session->name = name_str ? strdup(name_str) : NULL;
     new_session->themes_ids = get_from_json_int_array(json, "themeIds");
+    new_session->nb_themes = get_from_json_array_size(json, "themeIds");
     new_session->difficulty = get_session_difficulty(get_from_json_string(json, "difficulty"));
     new_session->nb_questions = get_from_json_int(json, "nbQuestions");
     new_session->time_limit = get_from_json_int(json, "timeLimit");
@@ -109,5 +111,6 @@ int post_session_create(server* s, char* request, client *cl){
 
     send_response(cl, response);
 
+    cJSON_Delete(json);
     return 0;
 }

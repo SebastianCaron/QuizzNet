@@ -51,3 +51,12 @@ int *get_from_json_int_array(cJSON *json, char *key){
     }
     return NULL;
 }
+
+int get_from_json_array_size(cJSON *json, char *key){
+    cJSON *value = cJSON_GetObjectItemCaseSensitive(json, key);
+
+    if(cJSON_IsArray(value)){
+        return cJSON_GetArraySize(value);
+    }
+    return 0;
+}

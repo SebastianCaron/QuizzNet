@@ -46,3 +46,12 @@ int get_from_json_int(cJSON *json, char *key);
  * @warning The size of the array is not returned; caller must track it separately.
  */
 int *get_from_json_int_array(cJSON *json, char *key);
+
+/**
+ * @brief Gets the size of a JSON array.
+ * 
+ * @param json Pointer to the cJSON object.
+ * @param key Key name to look up.
+ * @return Size of the array if found and valid, 0 otherwise.
+ */
+int get_from_json_array_size(cJSON *json, char *key);
