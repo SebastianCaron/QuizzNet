@@ -32,7 +32,6 @@ endpoints get_endpoint(char *request){
     while(is_valid_char(request[i])){
         i++;
     }
-    i--;
     // ADD ENDPOINT ROUTE FROM HERE
     /* Match route to endpoint */
     if(!strncmp("POST player/register", request, i)) return POST_PLAYER_REGISTER;
