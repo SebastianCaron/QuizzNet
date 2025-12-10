@@ -73,6 +73,15 @@ int post_session_join(server* s, char* request, client *cl){
     /* Add client to session */
     clist_append(session_to_join->players, cl);
     session_to_join->nb_players++;
+    
+    /* Initialize player session info */
+    cl->infos_session.joker_pass = 1;
+    cl->infos_session.joker_5050 = 1;
+    cl->infos_session.lives = session_to_join->nb_lives;
+    cl->infos_session.score = 0;
+    cl->infos_session.correctAnswers = 0;
+    cl->infos_session.eliminatedAt = -1;
+    cl->infos_session.is_creator = 0;
 
     /* Build notification for other players */
     retour_snp = snprintf(response_other_players, 1023, "POST session/player/joined\n{"

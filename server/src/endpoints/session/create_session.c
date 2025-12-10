@@ -64,6 +64,12 @@ int post_session_create(server* s, char* request, client *cl){
     clist_append(new_session->players, cl);
     cl->infos_session.session = new_session;
     cl->infos_session.is_creator = 1;
+    cl->infos_session.joker_pass = 1;
+    cl->infos_session.joker_5050 = 1;
+    cl->infos_session.lives = new_session->nb_lives;
+    cl->infos_session.score = 0;
+    cl->infos_session.correctAnswers = 0;
+    cl->infos_session.eliminatedAt = -1;
     new_session->server = s;
     
     /* Register session with server */
