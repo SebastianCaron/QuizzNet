@@ -61,7 +61,7 @@ char has_everyone_answered(session *s){
     client *c;
     for(int i = 0; i < clist_size(s->players); i++){
         c = (client *)clist_get(s->players, i);
-        if(c->infos_session.lives > 0 && c->infos_session.has_answered == 0) return 0;
+        if((s->type == CLASSIC || c->infos_session.lives > 0) && c->infos_session.has_answered == 0) return 0;
     }
     return 1;
 }
@@ -73,6 +73,8 @@ char has_everyone_answered(session *s){
  * @return 1 if everyone is dead, 0 if at least one player is alive.
  */
 char is_everyone_dead(session *s){
+    if(!s) return 0;
+    if(s->type == CLASSIC) return 0;
     client *c;
     for(int i = 0; i < clist_size(s->players); i++){
         c = (client *)clist_get(s->players, i);
@@ -91,7 +93,7 @@ void send_session_start(session *s){
     snprintf(response, sizeof(response), "POST session/started\n"
     "{"
     "   \"message\":\"session is starting\",\n"
-    "   \"cooldown\": %d\n"
+    "   \"countdown\": %d\n"
     "}\n\n", SESSION_START_COOLDOWN);
 
     for(int i = 0; i < clist_size(s->players); i++){
