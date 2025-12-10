@@ -1,4 +1,5 @@
 import tkinter as tk
+import json
 from src.session.session_infos import info_session  
 
 class QuestionPage(tk.Frame):
@@ -99,13 +100,12 @@ class QuestionPage(tk.Frame):
         self.btn_fifty.config(state="disabled")
         self.btn_skip.config(state="disabled")
 
-        message = (
-            "POST question/answer\n"
-            "{\n"
-            f'  "answer":{value},\n'
-            f'  "responseTime":{self.time_limit - self.time_left}\n'
-            "}\n"
-        )
+        payload = {
+            "answer": value,
+            "responseTime": self.time_limit - self.time_left
+        }
+        message = f"POST question/answer\n{json.dumps(payload)}\n"
+        
         self.app.tcp_client.send(message)
         print("Envoyé au serveur : ", message)
         self.clear_answers()
