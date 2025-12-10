@@ -14,10 +14,14 @@ void post_question_answer(session *s, char *request, client *cl) {
         send_invalid_response(cl);
         return;
     }
+    /* Skip to JSON body */
+    while(request && (request[0] != '{' && request[0] != '\0')) request++;
     
+    debug_log("Request JSON: %s", request);
     /* Parse JSON request */
     cJSON *json = cJSON_Parse(request);
     if(!json) {
+        debug_log("Error parsing JSON request");
         send_invalid_response(cl);
         return;
     }

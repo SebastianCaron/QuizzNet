@@ -16,6 +16,11 @@ void post_joker_use(session *s, char *request, client *cl) {
         return;
     }
     
+    /* Skip to JSON body */
+    while(request && (request[0] != '{' && request[0] != '\0')) request++;
+
+    debug_log("Request: %s", request);
+    
     /* Parse JSON request */
     cJSON *json = cJSON_Parse(request);
     if(!json) {
