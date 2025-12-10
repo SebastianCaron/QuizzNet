@@ -2,6 +2,8 @@ import json
 from gui.windows.game_questions import QuestionPage
 
 def response_question_new(message, app):
+    print("--- PASSE PAR QUESTION NEW ---")
+
     try :
         json_message = json.loads(message)
     except:

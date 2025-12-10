@@ -1,6 +1,8 @@
 import json
 
 def response_question_answered(message):
+    print("--- PASSE PAR QUESTION ANSWERED ---")
+
     try :
         json_message = json.loads(message)
     except:

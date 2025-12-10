@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from gui.windows.liste_session import SessionListPage
+from src.session.session_infos import info_session  
+
 
 class SessionCreatePage(tk.Frame):
     def __init__(self, app):
@@ -103,6 +105,7 @@ class SessionCreatePage(tk.Frame):
             f'  "maxPlayers":{int(self.max_players.get())}\n'
             "}\n"
         )
-        print("Message envoyé au serveur:", repr(message))
-
+        
+        info_session.set_nb_questions(self.nb_questions.get())
+        info_session.set_time_limit(self.time_limit.get())
         self.app.tcp_client.send(message)

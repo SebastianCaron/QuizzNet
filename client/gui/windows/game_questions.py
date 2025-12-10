@@ -14,7 +14,7 @@ class QuestionPage(tk.Frame):
         self.timer_label.pack(pady=10)
 
         self.nb_questions_label =  tk.Label(self, text="Questions restantes : --", font=("Arial", 14), fg="black")
-        self.timer_label.pack(pady=30)
+        self.nb_questions_label.pack(pady=30)
 
         self.answers_frame = tk.Frame(self)
         self.answers_frame.pack(pady=20)
@@ -24,6 +24,7 @@ class QuestionPage(tk.Frame):
 
         self.btn_fifty = tk.Button(jok_frame, text="50/50", command=lambda: self.use_joker("fifty"))
         self.btn_fifty.grid(row=0, column=0, padx=10)
+        self.btn_fifty.config(state="disabled")
 
         self.btn_skip = tk.Button(jok_frame, text="Passer", command=lambda: self.use_joker("skip"))
         self.btn_skip.grid(row=0, column=1, padx=10)
@@ -32,18 +33,19 @@ class QuestionPage(tk.Frame):
         self.nb_question_left = info_session.get_nb_questions()+1
         self.time_left = 0
         self.timer_running = False
+        self.after_id = None
 
     def load_question(self, type, question, answers):
-
+        self.btn_skip.config(state="normal")
         self.clear_answers()
-        self.nb_question_left-=1
+        self.nb_question_left = self.nb_question_left - 1
         self.time_left = self.time_limit
-        self.timer_running = True
 
         self.question_label.config(text=question)
         self.nb_questions_label.config(text = f"Questions restantes : {self.nb_question_left}")
 
         if type == "qcm":
+            self.btn_fifty.config(state="normal")
             for i, ans in enumerate(answers):
                 b = tk.Button(self.answers_frame, text=ans, width=30,
                               command=lambda idx=i: self.send_answer(idx))
@@ -63,6 +65,7 @@ class QuestionPage(tk.Frame):
             tk.Button(self.answers_frame, text="Valider", width=20,
                       command=lambda: self.send_answer(self.answer_entry.get())).pack(pady=10)
 
+        self.timer_running = True
         self.update_timer()
 
     def update_question_joker(self, new_answers):
@@ -75,19 +78,26 @@ class QuestionPage(tk.Frame):
     def clear_answers(self):
         for w in self.answers_frame.winfo_children():
             w.destroy()
+        self.time_left = self.time_limit
 
     def update_timer(self):
         if not self.timer_running:
             return
 
-        self.timer_label.config(text=f"Temps : {self.time_left}")
+        self.timer_label.config(text=f"Temps : {self.time_left:.1f}")
+        self.time_left = self.time_left - 0.1
+        self.after_id = self.after(100, self.update_timer)
 
-        self.time_left -= 0.1
-        self.after(100, self.update_timer)
+    def stop_timer(self):
+        self.timer_running = False
+        if self.after_id :
+            self.after_cancel(self.after_id)
+            self.after_id = None
 
     def send_answer(self, value):
-        self.timer_running = False
-
+        self.stop_timer()
+        self.btn_fifty.config(state="disabled")
+        self.btn_skip.config(state="disabled")
 
         message = (
             "POST question/answer\n"
@@ -97,7 +107,7 @@ class QuestionPage(tk.Frame):
             "}\n"
         )
         self.app.tcp_client.send(message)
-
+        print("Envoyé au serveur : ", message)
         self.clear_answers()
         self.question_label.config(text="Réponse envoyée !")
         self.timer_label.config(text="X")
@@ -112,3 +122,8 @@ class QuestionPage(tk.Frame):
             if info_session.joker_pass_available():
                 self.app.tcp_client.send("POST joker/use\n{\"type\":\"skip\"}\n")
                 info_session.joker_pass-=1
+
+#TODO : check pourquoi bad request !!!
+#TODO : check le timer et le nb question en négatif
+#TODO : désactiver les jokers quand plus utilisables
+#TODO : quand qcm pas asser grand donc rezise

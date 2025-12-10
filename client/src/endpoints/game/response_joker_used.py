@@ -2,6 +2,8 @@ import json
 from gui.windows.game_questions import QuestionPage
 
 def response_joker_used(message, app):
+    print("--- PASSE PAR JOKER USED ---")
+
     try :
         json_message = json.loads(message)
     except:

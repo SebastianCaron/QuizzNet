@@ -2,6 +2,7 @@ import json
 #GAME
 from src.endpoints.game.respone_themes_list import response_themes_list
 from src.endpoints.game.response_question_new import response_question_new
+from src.endpoints.game.response_question_result import response_question_result
 from src.endpoints.game.response_joker_used import response_joker_used
 from src.endpoints.game.response_question_answered import response_question_answered
 from src.endpoints.game.response_player_eliminated import response_player_eliminated
@@ -22,7 +23,7 @@ def message_route(message, app):
     print("------PASSE PAR LA DEBUT MESSAGE : \n", message, "\nFIN MESSAGE------\n")
     
     if message.startswith('POST question/results'):
-        response_question_new("\n".join(message.splitlines()[1:]), app)
+        response_question_result("\n".join(message.splitlines()[1:]), app)
     if message.startswith('POST session/player/eliminated'):
         response_player_eliminated("\n".join(message.splitlines()[1:]), app)
     if message.startswith('POST session/finished'):
@@ -65,5 +66,7 @@ def message_route(message, app):
             response_joker_used(message, app)
         case "question/answer":
             response_question_answered(message, app)
+        case "session/start":
+            return #Que des erreurs
         case _:
             print("INCONNU")

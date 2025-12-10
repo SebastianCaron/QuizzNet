@@ -91,7 +91,7 @@ void send_session_start(session *s){
     snprintf(response, sizeof(response), "POST session/started\n"
     "{"
     "   \"message\":\"session is starting\",\n"
-    "   \"cooldown\": %d,\n"
+    "   \"cooldown\": %d\n"
     "}\n\n", SESSION_START_COOLDOWN);
 
     for(int i = 0; i < clist_size(s->players); i++){
