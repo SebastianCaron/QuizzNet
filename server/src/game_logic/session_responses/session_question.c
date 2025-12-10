@@ -140,7 +140,7 @@ void send_session_question(session *s, question *q, int question_num){
     /* Send to all active players */
     for(int i = 0; i < clist_size(s->players); i++){
         client *c = (client *)clist_get(s->players, i);
-        if(c && c->infos_session.lives > 0) {
+        if(c && (s->type == CLASSIC || c->infos_session.lives >= 0)) {
             send_response(c, response);
         }
     }

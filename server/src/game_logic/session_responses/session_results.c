@@ -162,7 +162,7 @@ void send_player_eliminated(session *s, client *cl) {
         /* Notify all remaining players */
         for(int i = 0; i < clist_size(s->players); i++){
             client *c = (client *)clist_get(s->players, i);
-            if(c && c->infos_session.lives > 0) {
+            if(c && (s->type == CLASSIC || c->infos_session.lives >= 0)) {
                 send_response(c, response);
             }
         }
@@ -200,8 +200,8 @@ void send_session_results(session *s, int question_num) {
         client *c = (client *)clist_get(s->players, i);
         if(!c) continue;
 
-        /* Skip eliminated players */
-        if(c->infos_session.lives == 0) continue;
+        /* Skip eliminated players (only in BATTLE mode) */
+        if(s->type == BATTLE && c->infos_session.lives == 0) continue;
         
         int is_correct = is_answer_correct(s, c);
         int points = calculate_points(s, c, is_correct);
@@ -215,14 +215,14 @@ void send_session_results(session *s, int question_num) {
         
         /* Handle BATTLE mode lives */
         if(s->type == BATTLE) {
-            /* Wrong answer: lose a life */
-            if(!is_correct && c->infos_session.has_answered) {
+            /* Wrong answer: lose a life (but not if skipped) */
+            if(!is_correct && c->infos_session.has_answered && !c->infos_session.skip) {
                 if(c->infos_session.lives > 0) {
                     c->infos_session.lives--;
                 }
             }
-            /* Slowest player: lose a life */
-            if(c == last_player && c->infos_session.has_answered) {
+            /* Slowest player: lose a life (but not if skipped) */
+            if(c == last_player && c->infos_session.has_answered && !c->infos_session.skip) {
                 if(c->infos_session.lives > 0) {
                     c->infos_session.lives--;
                 }
@@ -308,7 +308,7 @@ void send_session_results(session *s, int question_num) {
         
         for(int i = 0; i < clist_size(s->players); i++){
             client *c = (client *)clist_get(s->players, i);
-            if(c && c->infos_session.lives > 0) {
+            if(c && (s->type == CLASSIC || c->infos_session.lives >= 0)) {
                 send_response(c, response);
             }
         }
