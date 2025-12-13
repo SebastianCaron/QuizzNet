@@ -8,6 +8,7 @@ from gui.windows.waiting_room import WaitingRoomPage
 from gui.windows.countdown import CountdownPage
 from gui.windows.game_questions import QuestionPage
 from gui.windows.game_result_question import ResultsPage
+from gui.windows.end_game import EndGamePage
 from src.endpoints.routes import message_route
 
 class MainInterfaceClient(tk.Tk):
@@ -15,7 +16,7 @@ class MainInterfaceClient(tk.Tk):
         super().__init__()
 
         self.title("QuizNet")
-        self.geometry("600x400")
+        self.geometry("800x600")
         self.resizable(False, False)
         self.current_page = None
 
@@ -25,7 +26,7 @@ class MainInterfaceClient(tk.Tk):
         self.frames = {}
 
         #Init all the different pages
-        for F in (SearchingServer, SelectServer, LoginPage, SessionListPage, SessionCreatePage, WaitingRoomPage, CountdownPage, QuestionPage,ResultsPage):
+        for F in (SearchingServer, SelectServer, LoginPage, SessionListPage, SessionCreatePage, WaitingRoomPage, CountdownPage, QuestionPage,ResultsPage, EndGamePage):
             frame = F(self)
             self.frames[F] = frame
             frame.place(relwidth=1, relheight=1)

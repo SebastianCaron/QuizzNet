@@ -11,12 +11,18 @@ class InfoSession:
         self.pseudo = ""
         self.time_limit = 0
         self.players_score = {} # dico pseudo:score
+        self.joker_fifty_session = 0
+        self.joker_pass_session = 0
         self.joker_fifty = 0 #just info to display the button
         self.joker_pass = 0 #same
+        self.lives_session = -1 # if -1 =  Non battle mode
         self.lives = -1 #if -1 -> not displayed not used, classic mode
         self.nb_questions = 0
         self.is_creator = False
 
+    def is_battle_mode(self):
+        return self.lives_session >= 0
+    
     def set_time_limit(self, time):
         self.time_limit = time
     
@@ -37,15 +43,17 @@ class InfoSession:
     
     def set_joker_fifty(self, nb_joker):
         self.joker_fifty = nb_joker
+        self.joker_fifty_session = nb_joker
 
     def set_joker_pass(self, nb_joker):
         self.joker_pass = nb_joker
+        self.joker_pass_session = nb_joker
 
     def joker_fifty_available(self):
-        return self.joker_fifty >= 0
+        return self.joker_fifty > 0
     
     def joker_pass_available(self):
-        return self.joker_pass >= 0
+        return self.joker_pass > 0
     
     def set_new_player(self, pseudo):
         self.players_score[pseudo] = 0
@@ -61,15 +69,22 @@ class InfoSession:
 
     def set_nb_lives(self, nb_lives):
         self.lives = nb_lives
+        self.lives_session = nb_lives
+
+    def set_lives_game(self, nb_lives):
+        self.lives = nb_lives
+
+    def get_nb_lives(self):
+        return self.lives
+    
+    def is_eliminated(self):
+        return self.lives == 0
 
     def get_nb_questions(self):
         return self.nb_questions
     
     def set_nb_questions(self, nb_questions):
         self.nb_questions = nb_questions
-
-    def lost_a_life(self):
-        self.lives -=1 
 
     def session_has_started(self):
         self.session_started = True
@@ -88,5 +103,15 @@ class InfoSession:
     
     def set_creator(self):
         self.is_creator = True
+
+    def reset_for_new_game(self):
+        for player in self.players_score.keys():
+            self.players_score[player] = 0
+        self.joker_fifty = self.joker_fifty_session
+        self.joker_pass = self.joker_pass_session
+        self.lives = self.lives_session
+        self.session_started = False
+
+
 
 info_session = InfoSession()

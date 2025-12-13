@@ -67,20 +67,24 @@ char has_everyone_answered(session *s){
 }
 
 /**
- * @brief Checks if all players are dead (no lives remaining).
+ * @brief Checks if only one player is still alive.
  * 
  * @param s Pointer to the session.
- * @return 1 if everyone is dead, 0 if at least one player is alive.
+ * @return 1 if only one (or no one) player is still alive, 0 if at least two player are alive.
  */
-char is_everyone_dead(session *s){
+char only_one_alive(session *s){
+    int alives = 0;
     if(!s) return 0;
     if(s->type == CLASSIC) return 0;
     client *c;
     for(int i = 0; i < clist_size(s->players); i++){
         c = (client *)clist_get(s->players, i);
-        if(c->infos_session.lives > 0) return 0;  /* Someone is still alive */
+        if(c->infos_session.lives > 0){
+            alives++;
+            if (alives >= 2) return 0;  /* At least 2 are still alive */
+        }
     }
-    return 1;  /* Everyone is dead */
+    return 1;  /* Only one alive or everyone is dead */
 }
 
 /**
@@ -166,7 +170,7 @@ void *handle_session(void *args){
     /* Main game loop */
     int current_question;
     int question_num = 0;
-    while(!is_everyone_dead(_session) && nb_remaining_question > 0 && !state->should_stop){
+    while(!only_one_alive(_session) && nb_remaining_question > 0 && !state->should_stop){
 
         /* Get current question from database */
         current_question = question_ids[_session->nb_questions - nb_remaining_question];

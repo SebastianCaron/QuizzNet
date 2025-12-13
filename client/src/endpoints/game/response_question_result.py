@@ -14,8 +14,16 @@ def response_question_result(message, app):
     page_quest = app.frames[QuestionPage]
     page_quest.stop_timer()
     
-    for player in json_message["results"]:
-        info_session.update_score(player["pseudo"], player["totalScore"])
+    if info_session.is_battle_mode():
+        for player in json_message["results"]:
+            info_session.update_score(player["pseudo"], player["totalScore"])
+            if player["pseudo"] == info_session.pseudo :
+                info_session.set_lives_game(player["lives"])
+
+    else:
+        for player in json_message["results"]:
+            info_session.update_score(player["pseudo"], player["totalScore"])
+
     page = app.frames[ResultsPage]
     page.set_result(json_message["correctAnswer"], json_message["explanation"], json_message["results"])
     app.show_page(ResultsPage)

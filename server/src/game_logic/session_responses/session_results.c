@@ -178,13 +178,18 @@ void send_session_results(session *s, int question_num) {
     
     question *q = &s->current_question;
     
-    /* Find slowest player for BATTLE mode penalty */
+    /* Find slowest player for BATTLE mode penalty if everyone found the good answer*/
     client *last_player = NULL;
     float max_time = -1.0f;
     
     if(s->type == BATTLE) {
         for(int i = 0; i < clist_size(s->players); i++){
             client *c = (client *)clist_get(s->players, i);
+            int is_correct = is_answer_correct(s, c);
+            if (!is_correct){
+                last_player = NULL;
+                break;
+            }
             if(c && c->infos_session.lives > 0 && c->infos_session.has_answered && 
                c->infos_session.player_answer.response_time > max_time) {
                 max_time = c->infos_session.player_answer.response_time;
@@ -216,13 +221,13 @@ void send_session_results(session *s, int question_num) {
         /* Handle BATTLE mode lives */
         if(s->type == BATTLE) {
             /* Wrong answer: lose a life (but not if skipped) */
-            if(!is_correct && c->infos_session.has_answered && !c->infos_session.skip) {
+            if(!is_correct && !c->infos_session.skip) {
                 if(c->infos_session.lives > 0) {
                     c->infos_session.lives--;
                 }
             }
-            /* Slowest player: lose a life (but not if skipped) */
-            if(c == last_player && c->infos_session.has_answered && !c->infos_session.skip) {
+            /* Slowest player: lose a life if everyone found the answer */
+            else if(last_player && c == last_player && !c->infos_session.skip) {
                 if(c->infos_session.lives > 0) {
                     c->infos_session.lives--;
                 }

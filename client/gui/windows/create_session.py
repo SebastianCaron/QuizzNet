@@ -105,7 +105,7 @@ class SessionCreatePage(tk.Frame):
             f'  "maxPlayers":{int(self.max_players.get())}\n'
             "}\n"
         )
-        
-        info_session.set_nb_questions(self.nb_questions.get())
-        info_session.set_time_limit(self.time_limit.get())
+
+        info_session.set_nb_questions(int(self.nb_questions.get()))
+        info_session.set_time_limit(int(self.time_limit.get()))
         self.app.tcp_client.send(message)

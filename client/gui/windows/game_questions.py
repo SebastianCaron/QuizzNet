@@ -17,6 +17,10 @@ class QuestionPage(tk.Frame):
         self.nb_questions_label =  tk.Label(self, text="Questions restantes : --", font=("Arial", 14), fg="black")
         self.nb_questions_label.pack(pady=30)
 
+        self.nb_lives_label =  tk.Label(self, text="Vies restantes : --", font=("Arial", 16), fg="red")
+        self.nb_lives_label.pack(pady=20)
+        self.nb_lives_label.pack_forget()
+
         self.answers_frame = tk.Frame(self)
         self.answers_frame.pack(pady=20)
 
@@ -25,51 +29,80 @@ class QuestionPage(tk.Frame):
 
         self.btn_fifty = tk.Button(jok_frame, text="50/50", command=lambda: self.use_joker("fifty"))
         self.btn_fifty.grid(row=0, column=0, padx=10)
-        self.btn_fifty.config(state="disabled")
 
         self.btn_skip = tk.Button(jok_frame, text="Passer", command=lambda: self.use_joker("skip"))
         self.btn_skip.grid(row=0, column=1, padx=10)
 
-        self.time_limit = info_session.get_time_limit()
-        self.nb_question_left = info_session.get_nb_questions()+1
+        self.time_limit = 0
+        self.nb_question_left = 0
         self.time_left = 0
         self.timer_running = False
         self.after_id = None
+        self.battle_mode = False
+
+    def set_timer_and_questions(self):
+        self.time_limit = info_session.get_time_limit()
+        self.nb_question_left = info_session.get_nb_questions()+1
+        print("--- Time Limit : ", self.time_limit, " --- Nombre Questions :", self.nb_question_left)
+        if info_session.is_battle_mode():
+            self.nb_lives_label.pack(pady=10)
+            self.battle_mode = True
 
     def load_question(self, type, question, answers):
-        self.btn_skip.config(state="normal")
+        self.btn_skip.config(state="disabled")
+        self.btn_fifty.config(state="disabled")
+        if info_session.joker_pass_available():
+            self.btn_skip.config(state="normal")
         self.clear_answers()
         self.nb_question_left = self.nb_question_left - 1
         self.time_left = self.time_limit
 
         self.question_label.config(text=question)
         self.nb_questions_label.config(text = f"Questions restantes : {self.nb_question_left}")
+        if self.battle_mode and info_session.is_eliminated() :
+            self.nb_lives_label.config(text="Vies restantes : 0 - ELIMINE")
+        elif self.battle_mode :
+            self.nb_lives_label.config(text=f"Vies restantes : {info_session.get_nb_lives()}")
 
         if type == "qcm":
-            self.btn_fifty.config(state="normal")
+            if info_session.joker_fifty_available() and (not info_session.is_eliminated()):
+                self.btn_fifty.config(state="normal")
             for i, ans in enumerate(answers):
                 b = tk.Button(self.answers_frame, text=ans, width=30,
                               command=lambda idx=i: self.send_answer(idx))
                 b.pack(pady=5)
+                if info_session.is_eliminated():
+                    b.config(state="disabled")
 
         elif type == "boolean":
-            tk.Button(self.answers_frame, text="Vrai", width=30,
-                      command=lambda: self.send_answer(True)).pack(pady=5)
+            bv = tk.Button(self.answers_frame, text="Vrai", width=30,
+                      command=lambda: self.send_answer(True))
+            bv.pack(pady=5)
 
-            tk.Button(self.answers_frame, text="Faux", width=30,
-                      command=lambda: self.send_answer(False)).pack(pady=5)
+            bf = tk.Button(self.answers_frame, text="Faux", width=30,
+                      command=lambda: self.send_answer(False))
+            bf.pack(pady=5)
+            
+            if info_session.is_eliminated():
+                    bf.config(state="disabled")
+                    bv.config(state="disabled")
 
         elif type == "text":
             self.answer_entry = tk.Entry(self.answers_frame, width=40, font=("Arial", 14))
             self.answer_entry.pack(pady=5)
 
-            tk.Button(self.answers_frame, text="Valider", width=20,
-                      command=lambda: self.send_answer(self.answer_entry.get())).pack(pady=10)
+            b = tk.Button(self.answers_frame, text="Valider", width=20,
+                      command=lambda: self.send_answer(self.answer_entry.get()))
+            b.pack(pady=10)
+            if info_session.is_eliminated():
+                    b.config(state="disabled")
+            
 
         self.timer_running = True
         self.update_timer()
 
     def update_question_joker(self, new_answers):
+        self.clear_answers()
         for i, ans in enumerate(new_answers):
             b = tk.Button(self.answers_frame, text=ans, width=30,
                             command=lambda idx=i: self.send_answer(idx))
@@ -97,8 +130,6 @@ class QuestionPage(tk.Frame):
 
     def send_answer(self, value):
         self.stop_timer()
-        self.btn_fifty.config(state="disabled")
-        self.btn_skip.config(state="disabled")
 
         payload = {
             "answer": value,
@@ -110,20 +141,20 @@ class QuestionPage(tk.Frame):
         print("Envoyé au serveur : ", message)
         self.clear_answers()
         self.question_label.config(text="Réponse envoyée !")
-        self.timer_label.config(text="X")
+        self.timer_label.config(text="")
 
     def use_joker(self, joker_type):
         if joker_type == "fifty":
             if info_session.joker_fifty_available():
                 self.app.tcp_client.send("POST joker/use\n{\"type\":\"fifty\"}\n")
-                info_session.joker_fifty-=1
+                info_session.use_joker_fifty()
+                self.btn_fifty.config(state="disabled")
 
         elif joker_type == "skip":
             if info_session.joker_pass_available():
                 self.app.tcp_client.send("POST joker/use\n{\"type\":\"skip\"}\n")
-                info_session.joker_pass-=1
+                info_session.use_joker_pass()
+                self.btn_skip.config(state="disabled")
 
-#TODO : check pourquoi bad request !!!
-#TODO : check le timer et le nb question en négatif
-#TODO : désactiver les jokers quand plus utilisables
-#TODO : quand qcm pas asser grand donc rezise
+        else :
+            print ("Erreur utilisation Joker")

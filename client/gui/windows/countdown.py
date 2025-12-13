@@ -20,5 +20,3 @@ class CountdownPage(tk.Frame):
         self.label.config(text=str(self.value))
         self.value -= 1
         self.after(1000, self.update_timer)
-
-#TODO : pourquoi timer pas affiché ?

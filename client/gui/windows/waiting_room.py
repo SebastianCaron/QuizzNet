@@ -22,9 +22,6 @@ class WaitingRoomPage(tk.Frame):
                                       command=self.send_start_request)
         self.button_start.grid(row=0, column=0, padx=10)
 
-        tk.Button(btn_frame, text="Quitter", width=15, 
-                  command=self.quit_session).grid(row=0, column=1, padx=10)
-
 
     def update_players(self, players, is_creator):
         self.players_listbox.delete(0, tk.END)
@@ -51,8 +48,3 @@ class WaitingRoomPage(tk.Frame):
 
         print("POST session/start envoyé")
         self.app.tcp_client.send("POST session/start")
-
-    def quit_session(self):
-        #self.app.tcp_client.send("POST session/left\n{}")
-        #TODO : endpoint left session in server AND handeler in client
-        self.app.show_page(SessionListPage)

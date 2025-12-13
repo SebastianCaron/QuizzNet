@@ -100,13 +100,13 @@ int post_session_create(server* s, char* request, client *cl){
         "   \"action\":\"session/create\",\n"
         "   \"statut\":\"201\",\n"
         "   \"message\":\"session created\",\n"
-        "   \"sessionId\": %d, \n"
+        "   \"sessionId\": %d,\n"
         "   \"isCreator\": true,\n"
-        "   \"lives\": %d, \n"
+        "   \"lives\": %d,\n"
         "   \"jokers\":{\n"
         "      \"fifty\": 1,\n"
         "      \"skip\": 1\n"
-        "   }"
+        "   }\n"
         "}\n\n", new_session->id, new_session->nb_lives);
 
         if (retour_snp < 0){

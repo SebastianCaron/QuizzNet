@@ -28,5 +28,11 @@ class ResultsPage(tk.Frame):
             widget.destroy()
 
         for player in results:
-            txt = f"{player['pseudo']} - {'✔️' if player['correct'] else '❌'} - Score {player['totalScore']}"
+            if "lives" in player:
+                if player["lives"] == 0:
+                    txt = f"{player['pseudo']} - {'V' if player['correct'] else 'X'} - Score {player['totalScore']} - Vies restantes {player['lives']} ELIMINE"
+                else:
+                    txt = f"{player['pseudo']} - {'V' if player['correct'] else 'X'} - Score {player['totalScore']} - Vies restantes {player['lives']}"
+            else :
+                txt = f"{player['pseudo']} - {'V' if player['correct'] else 'X'} - Score {player['totalScore']}"
             tk.Label(self.results_frame, text=txt).pack()

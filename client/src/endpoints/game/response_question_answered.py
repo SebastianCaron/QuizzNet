@@ -1,6 +1,6 @@
 import json
 
-def response_question_answered(message):
+def response_question_answered(message, app):
     print("--- PASSE PAR QUESTION ANSWERED ---")
 
     try :
@@ -8,4 +8,4 @@ def response_question_answered(message):
     except:
         return "ERROR JSON"
     
-    pass #TODO voir si y'a un truc intéressant à faire ici
+    pass

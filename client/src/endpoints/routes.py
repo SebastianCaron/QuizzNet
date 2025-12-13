@@ -16,7 +16,9 @@ from src.endpoints.session.response_session_list import response_session_list
 from src.endpoints.session.response_session_create import response_session_create
 from src.endpoints.session.response_session_join import response_session_join
 from src.endpoints.session.response_session_player_joined import response_session_player_join
+from src.endpoints.session.response_session_player_left import response_session_player_left
 from src.endpoints.session.response_session_started import response_session_started
+from src.endpoints.session.response_session_finished import response_session_finished
 
 
 def message_route(message, app):
@@ -27,9 +29,9 @@ def message_route(message, app):
     if message.startswith('POST session/player/eliminated'):
         response_player_eliminated("\n".join(message.splitlines()[1:]), app)
     if message.startswith('POST session/finished'):
-        return
+        response_session_finished("\n".join(message.splitlines()[1:]), app)
     if message.startswith('POST session/player/left'):
-        return
+        response_session_player_left("\n".join(message.splitlines()[1:]), app)
     if message.startswith('POST session/started'):
         response_session_started("\n".join(message.splitlines()[1:]), app)
     if message.startswith('POST question/new'):
@@ -67,6 +69,6 @@ def message_route(message, app):
         case "question/answer":
             response_question_answered(message, app)
         case "session/start":
-            return #Que des erreurs
+            return #Only errors that does not have to be handled
         case _:
             print("INCONNU")
