@@ -4,11 +4,19 @@ from src.session.session_infos import info_session
 from gui.christmas.christmas_button import ChristmasButton 
 
 class QuestionPage(tk.Frame):
-
+    """
+    The main gameplay interface.
+    
+    This page displays the current question, handles the countdown timer,
+    generates the answer buttons (Multiple Choice, Boolean, or Text),
+    and manages the usage of Jokers (50/50, Skip).
+    """
     def __init__(self, app):
+        """Initializes the Game UI components."""
         super().__init__(app)
         self.app = app
 
+        # Canvas setup for drawing the game board
         self.canvas = tk.Canvas(self, width=800, height=600, highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
 
@@ -17,6 +25,7 @@ class QuestionPage(tk.Frame):
         else:
             self.canvas.configure(bg="#1a1a1a")
 
+        # Top-left: Question Counter
         self.nb_questions_id = self.canvas.create_text(
             50, 30, 
             text="Q: --", 
@@ -25,6 +34,7 @@ class QuestionPage(tk.Frame):
             anchor="w"
         )
 
+        # Top-right: Countdown Timer
         self.timer_id = self.canvas.create_text(
             750, 30, 
             text="Temps : --", 
@@ -33,6 +43,7 @@ class QuestionPage(tk.Frame):
             anchor="e"
         )
 
+        # Top-center: Lives counter (Battle Mode only)
         self.nb_lives_id = self.canvas.create_text(
             400, 30, 
             text="", 
@@ -40,6 +51,7 @@ class QuestionPage(tk.Frame):
             fill="#ff4a4a"
         )
 
+        # Center: The Question Text
         self.question_id = self.canvas.create_text(
             400, 150, 
             text="En attente...", 
@@ -49,10 +61,12 @@ class QuestionPage(tk.Frame):
             justify="center"
         )
 
+        # Container for Answer Buttons (dynamically updated)
         self.answers_frame = tk.Frame(self.canvas, bg="#fdf5e6", bd=0) 
         self.answers_window = self.canvas.create_window(400, 350, window=self.answers_frame, width=600, height=300)
         self.canvas.itemconfigure(self.answers_window, state='hidden')
 
+        # Joker Section
         self.canvas.create_text(400, 520, text="--- Jokers ---", font=("Comic Sans MS", 12), fill="white")
 
         self.btn_fifty = ChristmasButton(
@@ -70,6 +84,8 @@ class QuestionPage(tk.Frame):
             command=lambda: self.use_joker("skip"),
             app=self.app
         )
+        
+        # Internal state variables
         self.time_limit = 0
         self.nb_question_left = 0
         self.time_left = 0
@@ -78,9 +94,12 @@ class QuestionPage(tk.Frame):
         self.battle_mode = False
 
     def set_timer_and_questions(self):
+        """
+        Configures the session parameters before the game starts.
+        Fetches time limits, question counts, and lives from the session info.
+        """
         self.time_limit = info_session.get_time_limit()
         self.nb_question_left = info_session.get_nb_questions()+1
-        print("--- Time Limit : ", self.time_limit, " --- Nombre Questions :", self.nb_question_left)
         
         if info_session.is_battle_mode():
             self.canvas.itemconfig(self.nb_lives_id, text=f"Vies : {info_session.get_nb_lives()}")
@@ -89,6 +108,12 @@ class QuestionPage(tk.Frame):
             self.canvas.itemconfig(self.nb_lives_id, text="")
 
     def load_question(self, type, question, answers):
+        """
+        Loads and displays a new question.
+        
+        It resets the UI, generates the appropriate input widgets (buttons or text entry)
+        based on the question type, and starts the timer.
+        """
         
         self.clear_answers()
         self.nb_question_left = self.nb_question_left - 1
@@ -97,6 +122,7 @@ class QuestionPage(tk.Frame):
         self.canvas.itemconfig(self.question_id, text=question)
         self.canvas.itemconfig(self.nb_questions_id, text=f"Restantes : {self.nb_question_left}")
         
+        # Enable Jokers if available and player is alive
         if info_session.joker_fifty_available() and not info_session.is_eliminated():
             self.btn_fifty.set_state("normal")
         else:
@@ -107,6 +133,7 @@ class QuestionPage(tk.Frame):
         else:
             self.btn_skip.set_state("disabled")
 
+        # Update Lives display
         if self.battle_mode:
             if info_session.is_eliminated():
                  self.canvas.itemconfig(self.nb_lives_id, text="ELIMINÉ")
@@ -115,11 +142,13 @@ class QuestionPage(tk.Frame):
 
         self.canvas.itemconfigure(self.answers_window, state='normal')
         
+        # Styles for buttons
         btn_bg = "#ffffff"
         btn_fg = "#165b33"
         btn_font = ("Comic Sans MS", 14, "bold")
-
+        
         if type == "qcm":
+            # Multiple Choice: Generate a button for each option
             for i, ans in enumerate(answers):
                 b = tk.Button(
                     self.answers_frame, 
@@ -134,12 +163,13 @@ class QuestionPage(tk.Frame):
                     b.config(state="disabled")
 
         elif type == "boolean":
+            # True/False buttons
             bv = tk.Button(self.answers_frame, text="Vrai", width=40, bg="#ddffdd", fg="green", font=btn_font,
-                      command=lambda: self.send_answer(True))
+                       command=lambda: self.send_answer(True))
             bv.pack(pady=10)
 
             bf = tk.Button(self.answers_frame, text="Faux", width=40, bg="#ffdddd", fg="red", font=btn_font,
-                      command=lambda: self.send_answer(False))
+                       command=lambda: self.send_answer(False))
             bf.pack(pady=10)
             
             if info_session.is_eliminated():
@@ -147,22 +177,26 @@ class QuestionPage(tk.Frame):
                     bv.config(state="disabled")
 
         elif type == "text":
+            # Text Entry field
             self.answer_entry = tk.Entry(self.answers_frame, width=40, font=("Comic Sans MS", 14))
             self.answer_entry.pack(pady=20)
 
             b = tk.Button(self.answers_frame, text="Valider", width=20, bg="white", font=btn_font,
-                      command=lambda: self.send_answer(self.answer_entry.get()))
+                       command=lambda: self.send_answer(self.answer_entry.get()))
             b.pack(pady=10)
             
             if info_session.is_eliminated():
                     b.config(state="disabled")
             
-
+        # Start the countdown
         self.timer_running = True
         self.update_timer()
 
     def update_question_joker(self, new_answers):
-        """Appelé quand le serveur renvoie les réponses filtrées (50/50)"""
+        """
+        Updates the QCM buttons after a 50/50 joker is used.
+        Removes incorrect answers (replaces them with '---').
+        """
         self.clear_answers()
         
         btn_bg = "#ffffff"
@@ -171,18 +205,25 @@ class QuestionPage(tk.Frame):
 
         for i, ans in enumerate(new_answers):
             if ans == "": 
+                # Render a disabled placeholder for removed answers
                 tk.Label(self.answers_frame, text="---", bg="#fdf5e6").pack(pady=5)
             else:
+                # Render the remaining valid answers
                 b = tk.Button(self.answers_frame, text=ans, width=40, bg=btn_bg, fg=btn_fg, font=btn_font,
                             command=lambda idx=i: self.send_answer(idx))
                 b.pack(pady=5)
 
 
     def clear_answers(self):
+        """Removes all widgets from the answers frame."""
         for w in self.answers_frame.winfo_children():
             w.destroy()
 
     def update_timer(self):
+        """
+        Recursive function to handle the visual countdown.
+        Updates color to red when time is running low (< 5s).
+        """
         if not self.timer_running:
             return
 
@@ -196,12 +237,17 @@ class QuestionPage(tk.Frame):
         self.after_id = self.after(100, self.update_timer)
 
     def stop_timer(self):
+        """Stops the countdown loop."""
         self.timer_running = False
         if self.after_id :
             self.after_cancel(self.after_id)
             self.after_id = None
 
     def send_answer(self, value):
+        """
+        Sends the selected answer to the server.
+        Includes the answer value and the time taken to respond.
+        """
         self.stop_timer()
 
         payload = {
@@ -211,8 +257,8 @@ class QuestionPage(tk.Frame):
         message = f"POST question/answer\n{json.dumps(payload)}\n"
         
         self.app.tcp_client.send(message)
-        print("Envoyé au serveur : ", message)
         
+        # Lock UI and show feedback
         self.clear_answers()
         
         self.canvas.itemconfigure(self.answers_window, state='hidden')
@@ -220,9 +266,14 @@ class QuestionPage(tk.Frame):
         self.canvas.itemconfig(self.timer_id, text="")
 
     def use_joker(self, joker_type):
+        """
+        Handles Joker activation requests.
+        Sends the request to the server and updates local inventory.
+        """
         if joker_type == "fifty":
             if info_session.joker_fifty_available() and not info_session.is_eliminated():
                 
+                # Disable button immediately to prevent double clicks
                 self.btn_fifty.set_state("disabled") 
                 
                 self.app.tcp_client.send("POST joker/use\n{\"type\":\"fifty\"}\n")

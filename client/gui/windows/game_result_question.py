@@ -1,10 +1,20 @@
 import tkinter as tk
 
 class ResultsPage(tk.Frame):
+    """
+    Displays the results of the round that just finished.
+    
+    It shows:
+    1. The correct answer.
+    2. An explanation or fun fact about the answer.
+    3. A scoreboard summarizing how each player performed (Correct/Wrong, Score, Lives).
+    """
     def __init__(self, app):
+        """Initializes the Results UI components."""
         super().__init__(app)
         self.app = app
 
+        # Canvas setup for background and flexible positioning
         self.canvas = tk.Canvas(self, width=800, height=600, highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
 
@@ -13,6 +23,7 @@ class ResultsPage(tk.Frame):
         else:
             self.canvas.configure(bg="#1a1a1a")
 
+        # Title
         self.canvas.create_text(
             400, 50, 
             text="Résultats", 
@@ -20,6 +31,7 @@ class ResultsPage(tk.Frame):
             fill="white"
         )
 
+        # Label for the Correct Answer
         self.good_answer_id = self.canvas.create_text(
             400, 120, 
             text="", 
@@ -27,6 +39,7 @@ class ResultsPage(tk.Frame):
             fill="#32cd32"
         )
 
+        # Label for the Explanation
         self.explanation_id = self.canvas.create_text(
             400, 180, 
             text="", 
@@ -36,6 +49,7 @@ class ResultsPage(tk.Frame):
             justify="center"
         )
 
+        # Listbox to show player statistics for this round
         self.results_listbox = tk.Listbox(
             self.canvas, 
             width=60, 
@@ -48,6 +62,7 @@ class ResultsPage(tk.Frame):
         )
         self.canvas.create_window(400, 350, window=self.results_listbox)
 
+        # Footer status text
         self.canvas.create_text(
             400, 500, 
             text="En attente de la prochaine question...", 
@@ -56,9 +71,18 @@ class ResultsPage(tk.Frame):
         )
 
     def set_result(self, good_answer, exp, results):
+        """
+        Updates the page with data received from the server.
+        
+        :param good_answer: Text of the correct answer.
+        :param exp: Text explanation/context.
+        :param results: List of dicts containing player stats (score, lives, correctness).
+        """
+        # Updates text fields
         self.canvas.itemconfig(self.good_answer_id, text=f"Bonne réponse : {good_answer}")
         self.canvas.itemconfig(self.explanation_id, text=f"{exp}")
 
+        # Clear and repopulate the player list
         self.results_listbox.delete(0, tk.END)
 
         for player in results:
@@ -68,6 +92,7 @@ class ResultsPage(tk.Frame):
 
             txt = f"{pseudo} - {correct_icon} - Score: {score}"
             
+            # Handle Battle Mode specific data (lives)
             if "lives" in player:
                 lives = player["lives"]
                 if lives == 0:
