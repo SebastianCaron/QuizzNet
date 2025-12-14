@@ -58,9 +58,11 @@ const char* session_status_to_string(session_status s) {
  * @return 1 if everyone answered, 0 otherwise.
  */
 char has_everyone_answered(session *s){
+    if(!s) return 1;
     client *c;
     for(int i = 0; i < clist_size(s->players); i++){
         c = (client *)clist_get(s->players, i);
+        if(!c) continue;
         if((s->type == CLASSIC || c->infos_session.lives > 0) && c->infos_session.has_answered == 0) return 0;
     }
     return 1;
@@ -79,6 +81,7 @@ char only_one_alive(session *s){
     client *c;
     for(int i = 0; i < clist_size(s->players); i++){
         c = (client *)clist_get(s->players, i);
+        if(!c) continue;
         if(c->infos_session.lives > 0){
             alives++;
             if (alives >= 2) return 0;  /* At least 2 are still alive */
@@ -133,6 +136,7 @@ int *create_question_set(session *s){
  * @param s Pointer to the session.
  */
 void reset_session_players(session *s){
+    if(!s) return;
     for(int i = 0; i < clist_size(s->players); i++){
         client *c = (client *)clist_get(s->players, i);
         if(c) {
@@ -272,11 +276,43 @@ void handle_request_session(session *s, char *request, client *p){
     }
 }
 
+/**
+ * @brief Notifies all players in a session that a player has left.
+ * 
+ * @param s Pointer to the session.
+ * @param cl Pointer to the client who left.
+ * @param reason Reason for leaving ("disconnected", "kicked", etc.).
+ */
+static void send_player_left(session *s, client *cl, const char *reason) {
+    if(!s || !cl) return;
+    
+    char response[1024] = {'\0'};
+    snprintf(response, sizeof(response), 
+        "POST session/player/left\n"
+        "{\n"
+        "   \"pseudo\":\"%s\",\n"
+        "   \"reason\":\"%s\"\n"
+        "}\n\n", 
+        cl->pseudo ? cl->pseudo : "", 
+        reason ? reason : "disconnected");
+    
+    /* Notify all remaining players */
+    for(int i = 0; i < clist_size(s->players); i++){
+        client *c = (client *)clist_get(s->players, i);
+        if(c && c != cl) {
+            send_response(c, response);
+        }
+    }
+}
+
 void session_remove_client(session *s, client *cl){
     if(!s || !cl) return;
     
     int client_index = clist_find(s->players, cl);
     if(client_index == -1) return;
+    
+    /* Notify other players that this player left */
+    send_player_left(s, cl, "disconnected");
     
     /* Transfer creator role if creator is leaving */
     if(cl->infos_session.is_creator && clist_size(s->players) > 1){

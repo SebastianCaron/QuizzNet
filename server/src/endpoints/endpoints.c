@@ -67,7 +67,7 @@ void send_error_response(client *cl){
 }
 
 void send_response(client *cl, char *response){
-    if (!cl || !response) return;
+    if (!cl || !response || cl->fd < 0) return;
     printf("envoyé : %s\n", response);
     write(cl->fd, response, strlen(response));
 }
