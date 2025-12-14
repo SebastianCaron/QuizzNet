@@ -8,7 +8,7 @@
 
 ### Compiler
 
-### Install openssl
+### Install openssl
 
 ```bash
 sudo apt install libssl-dev

@@ -2,7 +2,7 @@
 #Will recieve and keep all the usefull informations given by the server
 #About the session
 #All these informations are kept in the server. This is used only for the
-#graphic part of the client (display the pseudos, scores, etc)
+#graphic part of the client (display the pseudos, jokers, etc)
 #If you change sth here, it will not have any impact on the real situation
 
 class InfoSession:
@@ -105,11 +105,10 @@ class InfoSession:
         self.is_creator = True
 
     def reset_for_new_game(self):
-        for player in self.players_score.keys():
-            self.players_score[player] = 0
-        self.joker_fifty = self.joker_fifty_session
-        self.joker_pass = self.joker_pass_session
-        self.lives = self.lives_session
+        self.players_score = {}
+        self.joker_fifty = 0
+        self.joker_pass = 0
+        self.lives = 0
         self.session_started = False
 
 

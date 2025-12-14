@@ -2,63 +2,96 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from gui.windows.liste_session import SessionListPage
 from src.session.session_infos import info_session  
-
+from gui.christmas.christmas_button import ChristmasButton 
 
 class SessionCreatePage(tk.Frame):
     def __init__(self, app):
         super().__init__(app)
         self.app = app
 
-        tk.Label(self, text="Créer une session", font=("Arial", 15)).pack(pady=10)
+        self.canvas = tk.Canvas(self, width=800, height=600, highlightthickness=0)
+        self.canvas.pack(fill="both", expand=True)
 
-        form = tk.Frame(self)
-        form.pack()
+        if app.images.get("bg"):
+            self.canvas.create_image(0, 0, image=app.images["bg"], anchor="nw")
+        else:
+            self.canvas.configure(bg="#1a1a1a")
 
-        tk.Label(form, text="Nom de la session").grid(row=0, column=0, sticky="w")
-        self.entry_name = tk.Entry(form, width=30)
-        self.entry_name.grid(row=0, column=1, pady=5)
+        self.canvas.create_text(
+            400, 40, 
+            text="Créer une session", 
+            font=("Comic Sans MS", 26, "bold"), 
+            fill="white"
+        )
 
-        tk.Label(form, text="Difficulté").grid(row=1, column=0, sticky="w")
-        self.difficulty = ttk.Combobox(form, values=["facile", "moyen", "difficile"])
+        label_x = 280
+        input_x = 450
+        start_y = 100
+        step_y = 40
+
+        self.canvas.create_text(label_x, start_y, text="Nom de la session :", font=("Comic Sans MS", 12, "bold"), fill="white", anchor="e")
+        
+        self.entry_name = tk.Entry(self, width=25)
+        self.canvas.create_window(input_x, start_y, window=self.entry_name, anchor="w")
+
+        y = start_y + step_y
+        self.canvas.create_text(label_x, y, text="Difficulté :", font=("Comic Sans MS", 12, "bold"), fill="white", anchor="e")
+        
+        self.difficulty = ttk.Combobox(self, values=["facile", "moyen", "difficile"], width=23)
         self.difficulty.current(1)
-        self.difficulty.grid(row=1, column=1, pady=5)
+        self.canvas.create_window(input_x, y, window=self.difficulty, anchor="w")
 
-        tk.Label(form, text="Nombre de questions").grid(row=2, column=0, sticky="w")
-        self.nb_questions = tk.Spinbox(form, from_=10, to=50, width=5)
-        self.nb_questions.grid(row=2, column=1, pady=5)
+        y += step_y
+        self.canvas.create_text(label_x, y, text="Nombre de questions :", font=("Comic Sans MS", 12, "bold"), fill="white", anchor="e")
+        
+        self.nb_questions = tk.Spinbox(self, from_=5, to=50, width=5)
+        self.canvas.create_window(input_x, y, window=self.nb_questions, anchor="w")
 
-        tk.Label(form, text="Temps limite (s)").grid(row=3, column=0, sticky="w")
-        self.time_limit = tk.Spinbox(form, from_=10, to=60, width=5)
-        self.time_limit.grid(row=3, column=1, pady=5)
+        y += step_y
+        self.canvas.create_text(label_x, y, text="Temps limite (s) :", font=("Comic Sans MS", 12, "bold"), fill="white", anchor="e")
+        
+        self.time_limit = tk.Spinbox(self, from_=10, to=60, width=5)
+        self.canvas.create_window(input_x, y, window=self.time_limit, anchor="w")
 
-        tk.Label(form, text="Mode").grid(row=4, column=0, sticky="w")
-        self.mode = ttk.Combobox(form, values=["solo", "battle"])
+        y += step_y
+        self.canvas.create_text(label_x, y, text="Mode de jeu :", font=("Comic Sans MS", 12, "bold"), fill="white", anchor="e")
+        
+        self.mode = ttk.Combobox(self, values=["solo", "battle"], width=23)
         self.mode.current(0)
-        self.mode.grid(row=4, column=1, pady=5)
+        self.canvas.create_window(input_x, y, window=self.mode, anchor="w")
 
-        tk.Label(form, text="Joueurs max").grid(row=5, column=0, sticky="w")
-        self.max_players = tk.Spinbox(form, from_=2, to=8, width=5)
-        self.max_players.grid(row=5, column=1, pady=5)
+        y += step_y
+        self.canvas.create_text(label_x, y, text="Joueurs max :", font=("Comic Sans MS", 12, "bold"), fill="white", anchor="e")
+        
+        self.max_players = tk.Spinbox(self, from_=2, to=8, width=5)
+        self.canvas.create_window(input_x, y, window=self.max_players, anchor="w")
 
-        tk.Label(self, text="Choisir les thèmes :", font=("Arial", 10)).pack(pady=5)
+        self.theme_frame = tk.Frame(self, bg="#fdf5e6", bd=2, relief="groove")
+        
+        self.theme_window_id = self.canvas.create_window(400, y + 90, window=self.theme_frame, width=500, height=100)
 
         self.theme_vars = []
-        self.theme_frame = tk.Frame(self)
-        self.theme_frame.pack()
 
-        btn_frame = tk.Frame(self)
-        btn_frame.pack(pady=20)
+        btn_y = 530
 
-        tk.Button(btn_frame, text="Créer", width=15, command=self.send_create_request)\
-            .grid(row=0, column=0, padx=10)
+        self.btn_create = ChristmasButton(
+            canvas=self.canvas,
+            x=300, y=btn_y,
+            text="Créer",
+            command=self.send_create_request,
+            app=self.app
+        )
 
-        tk.Button(btn_frame, text="Retour", width=15, 
-                command=lambda: app.show_page(SessionListPage))\
-            .grid(row=0, column=1, padx=10)
+        self.btn_back = ChristmasButton(
+            canvas=self.canvas,
+            x=500, y=btn_y,
+            text="Retour",
+            command=lambda: app.show_page(SessionListPage),
+            app=self.app
+        )
 
 
     def update_theme_list(self, themes):
-        # Reset of the frame
         for widget in self.theme_frame.winfo_children():
             widget.destroy()
 
@@ -67,10 +100,19 @@ class SessionCreatePage(tk.Frame):
         cols = 3
         row = 0
         col = 0
+        
+        bg_color = "#fdf5e6"
 
         for theme in themes:
             var = tk.IntVar()
-            cb = tk.Checkbutton(self.theme_frame, text=theme["name"], variable=var)
+            cb = tk.Checkbutton(
+                self.theme_frame, 
+                text=theme["name"], 
+                variable=var,
+                bg=bg_color,
+                activebackground=bg_color,
+                font=("Comic Sans MS", 10, "bold")
+            )
 
             cb.grid(row=row, column=col, sticky="w", padx=10, pady=5)
 
@@ -91,7 +133,6 @@ class SessionCreatePage(tk.Frame):
         if not selected_theme_ids:
             messagebox.showwarning("Erreur", "Sélectionnez au moins un thème.")
             return
-
 
         message = (
             "POST session/create\n"
