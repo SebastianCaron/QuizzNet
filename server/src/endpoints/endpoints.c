@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
+#include <sys/socket.h>
 
 #include "../network/network.h"
 #include "endpoints.h"
@@ -69,7 +71,17 @@ void send_error_response(client *cl){
 void send_response(client *cl, char *response){
     if (!cl || !response || cl->fd < 0) return;
     printf("envoyé : %s\n", response);
-    write(cl->fd, response, strlen(response));
+    
+    /* MSG_NOSIGNAL prevents SIGPIPE if client disconnected */
+    ssize_t result = send(cl->fd, response, strlen(response), MSG_NOSIGNAL);
+    
+    /* If send failed, mark client as disconnected so future sends are skipped */
+    if (result < 0) {
+        if (errno == EPIPE || errno == ECONNRESET || errno == ENOTCONN) {
+            close(cl->fd);
+            cl->fd = -1;
+        }
+    }
 }
 
 void handle_request(server *s, char *request, client *cl){

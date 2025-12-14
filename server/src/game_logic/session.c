@@ -153,6 +153,8 @@ void *handle_session(void *args){
 
     question q;
 
+    _session->status = PLAYING;
+
     /* Generate question set for the session */
     int *question_ids = create_question_set(_session);
     int nb_remaining_question = _session->nb_questions;
@@ -167,6 +169,7 @@ void *handle_session(void *args){
     /* Check for server shutdown */
     if (state->should_stop) {
         free(question_ids);
+        clist_remove(_session->server->sessions, _session);
         session_destroy(_session);
         return NULL;
     }
@@ -234,6 +237,9 @@ void *handle_session(void *args){
     }
 
     free(question_ids);
+    
+    /* Remove session from server's session list before destroying */
+    clist_remove(_session->server->sessions, _session);
     session_destroy(_session);
 
     return NULL;
@@ -345,6 +351,13 @@ void session_receive_for_player(session *s, int i){
     
     client *p = clist_get(s->players, i);
     if(!p) return;
+    
+    /* Client already marked as disconnected (e.g., by failed send) */
+    if(p->fd < 0) {
+        session_remove_client(s, p);
+        client_destroy(p);
+        return;
+    }
 
     int res = receive_from(p->fd, &p->buffer_cl);
 
@@ -380,10 +393,20 @@ void session_destroy(session *s){
     free(s->name);
     free(s->themes_ids);
 
-    /* Re-attach all players to main server loop */
+    /* Re-attach all connected players to main server loop */
     int players_nb = clist_size(s->players);
     for(int i = 0; i < players_nb; i++){
-        attach_client_to_server_procedure(s->server, clist_get(s->players, i));
+        client *c = clist_get(s->players, i);
+        if(c && c->fd >= 0) {
+            /* Clear session reference before re-attaching */
+            c->infos_session.session = NULL;
+            c->infos_session.is_creator = 0;
+            /* Only re-attach clients that are still connected */
+            attach_client_to_server_procedure(s->server, c);
+        } else if(c) {
+            /* Client disconnected, destroy it */
+            client_destroy(c);
+        }
     }
     clist_destroy(s->players);
 

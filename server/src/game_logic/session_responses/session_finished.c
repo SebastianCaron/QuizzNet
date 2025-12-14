@@ -17,6 +17,11 @@ static int compare_solo(const void *a, const void *b) {
     client *client_a = *(client **)a;
     client *client_b = *(client **)b;
     
+    /* Handle NULL pointers */
+    if(!client_a && !client_b) return 0;
+    if(!client_a) return 1;
+    if(!client_b) return -1;
+    
     /* Primary: higher score first */
     if(client_b->infos_session.score != client_a->infos_session.score) {
         return client_b->infos_session.score - client_a->infos_session.score;
@@ -35,6 +40,11 @@ static int compare_solo(const void *a, const void *b) {
 static int compare_battle(const void *a, const void *b) {
     client *client_a = *(client **)a;
     client *client_b = *(client **)b;
+    
+    /* Handle NULL pointers */
+    if(!client_a && !client_b) return 0;
+    if(!client_a) return 1;
+    if(!client_b) return -1;
     
     /* Primary: more lives first */
     if(client_b->infos_session.lives != client_a->infos_session.lives) {
@@ -62,6 +72,9 @@ void send_session_finished(session *s){
     if(!s) return;
     
     int nb_players = clist_size(s->players);
+    
+    /* No players left, nothing to send */
+    if(nb_players == 0) return;
 
     /* Create array for sorting */
     client **players_array = malloc(nb_players * sizeof(client *));

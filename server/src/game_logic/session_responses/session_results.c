@@ -48,6 +48,10 @@ int get_bonus_points(difficulty diff){
 int is_answer_correct(session *s, client *cl) {
     question *q = &s->current_question;
     
+    if(cl->infos_session.skip) {
+        return 1;
+    }
+    
     if(!cl->infos_session.has_answered) {
         return 0;
     }
