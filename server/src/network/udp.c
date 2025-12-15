@@ -95,7 +95,7 @@ void* udp_thread_task(void *arg){
         if (strcmp(buffer, "looking for quiznet servers") == 0) {
             /* Build response with server name and TCP port */
             char response[BUFFER_SIZE];
-            snprintf(response, sizeof(response), "hello i’m a quiznet server:%s:%s", args->server_name, args->port_tcp);
+            snprintf(response, sizeof(response), "hello i'm a quiznet server:%s:%s", args->server_name, args->port_tcp);
 
             /* Send response back to the requesting client */
             ssize_t sent = sendto(udp_sock, response, strlen(response), 0, (struct sockaddr *)&client_addr, client_len);

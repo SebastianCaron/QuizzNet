@@ -48,6 +48,10 @@ int get_bonus_points(difficulty diff){
 int is_answer_correct(session *s, client *cl) {
     question *q = &s->current_question;
     
+    if(cl->infos_session.skip) {
+        return 1;
+    }
+    
     if(!cl->infos_session.has_answered) {
         return 0;
     }
@@ -157,12 +161,12 @@ void send_player_eliminated(session *s, client *cl) {
     char *json_string = cJSON_Print(json);
     if(json_string) {
         char response[1024] = {'\0'};
-        snprintf(response, sizeof(response), "POST session/player/eliminated\n%s", json_string);
+        snprintf(response, sizeof(response), "POST session/player/eliminated\n%s\n\n", json_string);
         
         /* Notify all remaining players */
         for(int i = 0; i < clist_size(s->players); i++){
             client *c = (client *)clist_get(s->players, i);
-            if(c && c->infos_session.lives > 0) {
+            if(c && (s->type == CLASSIC || c->infos_session.lives >= 0)) {
                 send_response(c, response);
             }
         }
@@ -178,13 +182,18 @@ void send_session_results(session *s, int question_num) {
     
     question *q = &s->current_question;
     
-    /* Find slowest player for BATTLE mode penalty */
+    /* Find slowest player for BATTLE mode penalty if everyone found the good answer*/
     client *last_player = NULL;
     float max_time = -1.0f;
     
     if(s->type == BATTLE) {
         for(int i = 0; i < clist_size(s->players); i++){
             client *c = (client *)clist_get(s->players, i);
+            int is_correct = is_answer_correct(s, c);
+            if (!is_correct){
+                last_player = NULL;
+                break;
+            }
             if(c && c->infos_session.lives > 0 && c->infos_session.has_answered && 
                c->infos_session.player_answer.response_time > max_time) {
                 max_time = c->infos_session.player_answer.response_time;
@@ -200,8 +209,8 @@ void send_session_results(session *s, int question_num) {
         client *c = (client *)clist_get(s->players, i);
         if(!c) continue;
 
-        /* Skip eliminated players */
-        if(c->infos_session.lives == 0) continue;
+        /* Skip eliminated players (only in BATTLE mode) */
+        if(s->type == BATTLE && c->infos_session.lives == 0) continue;
         
         int is_correct = is_answer_correct(s, c);
         int points = calculate_points(s, c, is_correct);
@@ -215,14 +224,14 @@ void send_session_results(session *s, int question_num) {
         
         /* Handle BATTLE mode lives */
         if(s->type == BATTLE) {
-            /* Wrong answer: lose a life */
-            if(!is_correct && c->infos_session.has_answered) {
+            /* Wrong answer: lose a life (but not if skipped) */
+            if(!is_correct && !c->infos_session.skip) {
                 if(c->infos_session.lives > 0) {
                     c->infos_session.lives--;
                 }
             }
-            /* Slowest player: lose a life */
-            if(c == last_player && c->infos_session.has_answered) {
+            /* Slowest player: lose a life if everyone found the answer */
+            else if(last_player && c == last_player && !c->infos_session.skip) {
                 if(c->infos_session.lives > 0) {
                     c->infos_session.lives--;
                 }
@@ -304,11 +313,11 @@ void send_session_results(session *s, int question_num) {
     char *json_string = cJSON_Print(response_json);
     if(json_string) {
         char response[4096] = {'\0'};
-        snprintf(response, sizeof(response), "POST question/results\n%s", json_string);
+        snprintf(response, sizeof(response), "POST question/results\n%s\n\n", json_string);
         
         for(int i = 0; i < clist_size(s->players); i++){
             client *c = (client *)clist_get(s->players, i);
-            if(c && c->infos_session.lives > 0) {
+            if(c && (s->type == CLASSIC || c->infos_session.lives >= 0)) {
                 send_response(c, response);
             }
         }

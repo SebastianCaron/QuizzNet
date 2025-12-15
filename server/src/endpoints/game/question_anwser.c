@@ -14,10 +14,13 @@ void post_question_answer(session *s, char *request, client *cl) {
         send_invalid_response(cl);
         return;
     }
+    /* Skip to JSON body */
+    while(request && (request[0] != '{' && request[0] != '\0')) request++;
     
     /* Parse JSON request */
     cJSON *json = cJSON_Parse(request);
     if(!json) {
+        debug_log("Error parsing JSON request");
         send_invalid_response(cl);
         return;
     }
@@ -96,7 +99,7 @@ void post_question_answer(session *s, char *request, client *cl) {
     char *json_string = cJSON_Print(response_json);
     if(json_string) {
         char response[1024] = {'\0'};
-        snprintf(response, sizeof(response), "%s", json_string);
+        snprintf(response, sizeof(response), "%s\n\n", json_string);
         send_response(cl, response);
         free(json_string);
     }

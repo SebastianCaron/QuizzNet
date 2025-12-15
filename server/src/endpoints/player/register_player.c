@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "register_player.h"
 
@@ -50,7 +51,7 @@ int post_player_register(server *s, char *request, client *cl){
         "   \"action\":\"player/register\",\n"
         "   \"statut\":\"409\",\n"
         "   \"message\":\"pseudo already exists\"\n"
-        "}";
+        "}\n\n";
         sqlite_result_destroy(check_res);
         cJSON_Delete(json);
         send_response(cl, response);
@@ -73,6 +74,7 @@ int post_player_register(server *s, char *request, client *cl){
         return 1;
     }
 
+    cl->pseudo = strdup(pseudo);
     cJSON_Delete(json);
     sqlite_result_destroy(res);
 
@@ -82,7 +84,7 @@ int post_player_register(server *s, char *request, client *cl){
     "   \"action\":\"player/register\",\n"
     "   \"statut\":\"201\",\n"
     "   \"message\":\"player registered successfully\"\n"
-    "}";
+    "}\n\n";
     send_response(cl, response);
 
     return 0;

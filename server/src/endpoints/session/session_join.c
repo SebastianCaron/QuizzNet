@@ -15,6 +15,7 @@ int post_session_join(server* s, char* request, client *cl){
     char response_other_players[1024] = {'\0'};
 
     /* Parse JSON request */
+    while(request && (request[0] != '{' && request[0] != '\0')) request++;
     cJSON *json = cJSON_Parse(request);
     if (json == NULL) {
         const char *error_ptr = cJSON_GetErrorPtr();
@@ -33,7 +34,7 @@ int post_session_join(server* s, char* request, client *cl){
             "   \"action\":\"session/join\",\n"
             "   \"statut\":\"404\",\n"
             "   \"message\":\"session does not exists\"\n"
-            "}";
+            "}\n\n";
             send_response(cl, response_full);
             return 0;
     }
@@ -45,7 +46,7 @@ int post_session_join(server* s, char* request, client *cl){
             "   \"action\":\"session/join\",\n"
             "   \"statut\":\"400\",\n"
             "   \"message\":\"already in this session\"\n"
-            "}";
+            "}\n\n";
         send_response(cl, response_full);
         cJSON_Delete(json);
         return 0;
@@ -58,7 +59,7 @@ int post_session_join(server* s, char* request, client *cl){
             "   \"action\":\"session/join\",\n"
             "   \"statut\":\"403\",\n"
             "   \"message\":\"session is full\"\n"
-            "}";
+            "}\n\n";
             send_response(cl, response_full);
             cJSON_Delete(json);
             return 0;
@@ -72,12 +73,21 @@ int post_session_join(server* s, char* request, client *cl){
     /* Add client to session */
     clist_append(session_to_join->players, cl);
     session_to_join->nb_players++;
+    
+    /* Initialize player session info */
+    cl->infos_session.joker_pass = 1;
+    cl->infos_session.joker_5050 = 1;
+    cl->infos_session.lives = session_to_join->nb_lives;
+    cl->infos_session.score = 0;
+    cl->infos_session.correctAnswers = 0;
+    cl->infos_session.eliminatedAt = -1;
+    cl->infos_session.is_creator = 0;
 
     /* Build notification for other players */
-    retour_snp = snprintf(response_other_players, 1023, "{"
+    retour_snp = snprintf(response_other_players, 1023, "POST session/player/joined\n{"
             "   \"pseudo\":\"%s\",\n"
-            "   \"nbPlayers\":\"%d\",\n"
-            "}", cl->pseudo, session_to_join->nb_players);
+            "   \"nbPlayers\":\"%d\"\n"
+            "}\n\n", cl->pseudo, session_to_join->nb_players);
 
     if (retour_snp < 0){
         throw_error(ENCODING_ERROR, "Erreur snprintf join session response other players");
@@ -123,7 +133,9 @@ int post_session_join(server* s, char* request, client *cl){
         if((i + 1) != player_size) strcat(response, ",");
 
         /* Notify existing player about new player */
-        send_response(player, response_other_players);
+        if (strcmp(player->pseudo, cl->pseudo) != 0){
+            send_response(player, response_other_players);
+        }
     }
 
     /* Complete response based on game mode */
@@ -132,8 +144,8 @@ int post_session_join(server* s, char* request, client *cl){
         "   \"jokers\":{\n"
         "      \"fifty\": 1,\n"
         "      \"skip\": 1\n"
-        "   }"
-        "}");
+        "   }\n"
+        "}\n\n");
     } else {
         /* BATTLE mode includes lives */
         snprintf(response + strlen(response), sizeof(response) - strlen(response), "],\n"
@@ -141,8 +153,8 @@ int post_session_join(server* s, char* request, client *cl){
         "   \"jokers\":{\n"
         "      \"fifty\": 1,\n"
         "      \"skip\": 1\n"
-        "   }"
-        "}", session_to_join->nb_lives);
+        "   }\n"
+        "}\n\n", session_to_join->nb_lives);
     }
 
     send_response(cl, response);

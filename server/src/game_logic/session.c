@@ -58,27 +58,36 @@ const char* session_status_to_string(session_status s) {
  * @return 1 if everyone answered, 0 otherwise.
  */
 char has_everyone_answered(session *s){
+    if(!s) return 1;
     client *c;
     for(int i = 0; i < clist_size(s->players); i++){
         c = (client *)clist_get(s->players, i);
-        if(c->infos_session.lives > 0 && c->infos_session.has_answered == 0) return 0;
+        if(!c) continue;
+        if((s->type == CLASSIC || c->infos_session.lives > 0) && c->infos_session.has_answered == 0) return 0;
     }
     return 1;
 }
 
 /**
- * @brief Checks if at least one player is still alive.
+ * @brief Checks if only one player is still alive.
  * 
  * @param s Pointer to the session.
- * @return 1 if someone is alive, 0 if everyone is dead.
+ * @return 1 if only one (or no one) player is still alive, 0 if at least two player are alive.
  */
-char is_everyone_dead(session *s){
+char only_one_alive(session *s){
+    int alives = 0;
+    if(!s) return 0;
+    if(s->type == CLASSIC) return 0;
     client *c;
     for(int i = 0; i < clist_size(s->players); i++){
         c = (client *)clist_get(s->players, i);
-        if(c->infos_session.lives > 0) return 1;
+        if(!c) continue;
+        if(c->infos_session.lives > 0){
+            alives++;
+            if (alives >= 2) return 0;  /* At least 2 are still alive */
+        }
     }
-    return 0;
+    return 1;  /* Only one alive or everyone is dead */
 }
 
 /**
@@ -91,8 +100,8 @@ void send_session_start(session *s){
     snprintf(response, sizeof(response), "POST session/started\n"
     "{"
     "   \"message\":\"session is starting\",\n"
-    "   \"cooldown\": %d,\n"
-    "}", SESSION_START_COOLDOWN);
+    "   \"countdown\": %d\n"
+    "}\n\n", SESSION_START_COOLDOWN);
 
     for(int i = 0; i < clist_size(s->players); i++){
         send_response((client *)clist_get(s->players, i), response);
@@ -127,6 +136,7 @@ int *create_question_set(session *s){
  * @param s Pointer to the session.
  */
 void reset_session_players(session *s){
+    if(!s) return;
     for(int i = 0; i < clist_size(s->players); i++){
         client *c = (client *)clist_get(s->players, i);
         if(c) {
@@ -143,6 +153,8 @@ void *handle_session(void *args){
 
     question q;
 
+    _session->status = PLAYING;
+
     /* Generate question set for the session */
     int *question_ids = create_question_set(_session);
     int nb_remaining_question = _session->nb_questions;
@@ -157,6 +169,7 @@ void *handle_session(void *args){
     /* Check for server shutdown */
     if (state->should_stop) {
         free(question_ids);
+        clist_remove(_session->server->sessions, _session);
         session_destroy(_session);
         return NULL;
     }
@@ -164,7 +177,7 @@ void *handle_session(void *args){
     /* Main game loop */
     int current_question;
     int question_num = 0;
-    while(!is_everyone_dead(_session) && nb_remaining_question > 0 && !state->should_stop){
+    while(!only_one_alive(_session) && nb_remaining_question > 0 && !state->should_stop){
 
         /* Get current question from database */
         current_question = question_ids[_session->nb_questions - nb_remaining_question];
@@ -224,6 +237,9 @@ void *handle_session(void *args){
     }
 
     free(question_ids);
+    
+    /* Remove session from server's session list before destroying */
+    clist_remove(_session->server->sessions, _session);
     session_destroy(_session);
 
     return NULL;
@@ -266,11 +282,43 @@ void handle_request_session(session *s, char *request, client *p){
     }
 }
 
+/**
+ * @brief Notifies all players in a session that a player has left.
+ * 
+ * @param s Pointer to the session.
+ * @param cl Pointer to the client who left.
+ * @param reason Reason for leaving ("disconnected", "kicked", etc.).
+ */
+static void send_player_left(session *s, client *cl, const char *reason) {
+    if(!s || !cl) return;
+    
+    char response[1024] = {'\0'};
+    snprintf(response, sizeof(response), 
+        "POST session/player/left\n"
+        "{\n"
+        "   \"pseudo\":\"%s\",\n"
+        "   \"reason\":\"%s\"\n"
+        "}\n\n", 
+        cl->pseudo ? cl->pseudo : "", 
+        reason ? reason : "disconnected");
+    
+    /* Notify all remaining players */
+    for(int i = 0; i < clist_size(s->players); i++){
+        client *c = (client *)clist_get(s->players, i);
+        if(c && c != cl) {
+            send_response(c, response);
+        }
+    }
+}
+
 void session_remove_client(session *s, client *cl){
     if(!s || !cl) return;
     
     int client_index = clist_find(s->players, cl);
     if(client_index == -1) return;
+    
+    /* Notify other players that this player left */
+    send_player_left(s, cl, "disconnected");
     
     /* Transfer creator role if creator is leaving */
     if(cl->infos_session.is_creator && clist_size(s->players) > 1){
@@ -303,6 +351,13 @@ void session_receive_for_player(session *s, int i){
     
     client *p = clist_get(s->players, i);
     if(!p) return;
+    
+    /* Client already marked as disconnected (e.g., by failed send) */
+    if(p->fd < 0) {
+        session_remove_client(s, p);
+        client_destroy(p);
+        return;
+    }
 
     int res = receive_from(p->fd, &p->buffer_cl);
 
@@ -338,10 +393,20 @@ void session_destroy(session *s){
     free(s->name);
     free(s->themes_ids);
 
-    /* Re-attach all players to main server loop */
+    /* Re-attach all connected players to main server loop */
     int players_nb = clist_size(s->players);
     for(int i = 0; i < players_nb; i++){
-        attach_client_to_server_procedure(s->server, clist_get(s->players, i));
+        client *c = clist_get(s->players, i);
+        if(c && c->fd >= 0) {
+            /* Clear session reference before re-attaching */
+            c->infos_session.session = NULL;
+            c->infos_session.is_creator = 0;
+            /* Only re-attach clients that are still connected */
+            attach_client_to_server_procedure(s->server, c);
+        } else if(c) {
+            /* Client disconnected, destroy it */
+            client_destroy(c);
+        }
     }
     clist_destroy(s->players);
 

@@ -11,7 +11,7 @@ int post_session_start(server* s, char* request, client *cl){
         "   \"action\":\"session/start\",\n"
         "   \"statut\":\"404\",\n"
         "   \"message\":\"there is no session that you can start\"\n"
-        "}";
+        "}\n\n";
         send_response(cl, response);
         return 1;
     }
@@ -26,7 +26,7 @@ int post_session_start(server* s, char* request, client *cl){
         "   \"action\":\"session/start\",\n"
         "   \"statut\":\"201\",\n"
         "   \"message\":\"not enough player in session\"\n"
-        "}";
+        "}\n\n";
         send_response(cl, response);
         return 1;
     }
@@ -52,7 +52,7 @@ int post_session_start(server* s, char* request, client *cl){
         "   \"action\":\"session/start\",\n"
         "   \"statut\":\"500\",\n"
         "   \"message\":\"Error when starting the session\"\n"
-        "}";
+        "}\n\n";
         send_response(cl, response);
         return 1;
     }

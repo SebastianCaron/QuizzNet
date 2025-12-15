@@ -16,6 +16,11 @@ void post_joker_use(session *s, char *request, client *cl) {
         return;
     }
     
+    /* Skip to JSON body */
+    while(request && (request[0] != '{' && request[0] != '\0')) request++;
+
+    debug_log("Request: %s", request);
+    
     /* Parse JSON request */
     cJSON *json = cJSON_Parse(request);
     if(!json) {
@@ -87,16 +92,17 @@ void post_joker_use(session *s, char *request, client *cl) {
         }
         
         /* Build remaining answers array */
-        cJSON *remaining_answers = cJSON_CreateArray();
-        if(remaining_answers) {
-            cJSON_AddItemToArray(remaining_answers, 
+        cJSON *temp_answers = cJSON_CreateArray();
+        if(temp_answers) {
+            cJSON_AddItemToArray(temp_answers, 
                 cJSON_CreateString(correct_answer));
             
-            cJSON_AddItemToArray(remaining_answers, 
+            cJSON_AddItemToArray(temp_answers, 
                 cJSON_CreateString(other_item->valuestring));
             
             /* Shuffle so correct answer isn't always first */
-            shuffle_cjson_array(remaining_answers);
+            cJSON *remaining_answers = create_shuffled_array(temp_answers);
+            cJSON_Delete(temp_answers);
             
             /* Build response */
             cJSON *response_json = cJSON_CreateObject();
@@ -114,7 +120,7 @@ void post_joker_use(session *s, char *request, client *cl) {
             char *json_string = cJSON_Print(response_json);
             if(json_string) {
                 char response[2048] = {'\0'};
-                snprintf(response, sizeof(response), "%s", json_string);
+                snprintf(response, sizeof(response), "%s\n\n", json_string);
                 send_response(cl, response);
                 free(json_string);
             }
@@ -160,7 +166,7 @@ void post_joker_use(session *s, char *request, client *cl) {
         char *json_string = cJSON_Print(response_json);
         if(json_string) {
             char response[2048] = {'\0'};
-            snprintf(response, sizeof(response), "%s", json_string);
+            snprintf(response, sizeof(response), "%s\n\n", json_string);
             send_response(cl, response);
             free(json_string);
         }

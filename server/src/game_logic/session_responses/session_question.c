@@ -8,26 +8,50 @@
 #include "../../json/cJSON.h"
 #include "../session.h"
 
-void shuffle_cjson_array(cJSON *array) {
-    if(!array || !cJSON_IsArray(array)) return;
+/**
+ * @brief Creates a shuffled copy of a cJSON string array.
+ * 
+ * @param array Original cJSON array.
+ * @return New shuffled cJSON array, or NULL on error.
+ */
+cJSON *create_shuffled_array(cJSON *array) {
+    if(!array || !cJSON_IsArray(array)) return NULL;
     
     int size = cJSON_GetArraySize(array);
-    if(size <= 1) return;
+    if(size == 0) return cJSON_CreateArray();
     
+    /* Copy strings to temporary array */
+    char **strings = malloc(size * sizeof(char *));
+    if(!strings) return NULL;
+    
+    for(int i = 0; i < size; i++) {
+        cJSON *item = cJSON_GetArrayItem(array, i);
+        if(item && cJSON_IsString(item)) {
+            strings[i] = strdup(item->valuestring);
+        } else {
+            strings[i] = strdup("");
+        }
+    }
+    
+    /* Fisher-Yates shuffle */
     for(int i = size - 1; i > 0; i--) {
         int j = rand() % (i + 1);
         if(i != j) {
-            cJSON *item_i = cJSON_GetArrayItem(array, i);
-            cJSON *item_j = cJSON_GetArrayItem(array, j);
-            
-            /* Swap string values */
-            if(item_i && item_j && cJSON_IsString(item_i) && cJSON_IsString(item_j)) {
-                char *temp = item_i->valuestring;
-                item_i->valuestring = item_j->valuestring;
-                item_j->valuestring = temp;
-            }
+            char *temp = strings[i];
+            strings[i] = strings[j];
+            strings[j] = temp;
         }
     }
+    
+    /* Create new array with shuffled strings */
+    cJSON *shuffled = cJSON_CreateArray();
+    for(int i = 0; i < size; i++) {
+        cJSON_AddItemToArray(shuffled, cJSON_CreateString(strings[i]));
+        free(strings[i]);
+    }
+    free(strings);
+    
+    return shuffled;
 }
 
 void send_session_question(session *s, question *q, int question_num){
@@ -48,38 +72,43 @@ void send_session_question(session *s, question *q, int question_num){
         type_str = "qcm";
         cJSON_AddStringToObject(json, "type", type_str);
         
-        /* Parse and shuffle answers */
+        /* Parse answers */
         cJSON *answers_json = cJSON_Parse(q->answer);
         if(answers_json && cJSON_IsArray(answers_json)) {
-            /* Remember correct answer before shuffling */
+            /* Remember correct answer before shuffling (first answer is correct) */
             cJSON *correct_answer_item = cJSON_GetArrayItem(answers_json, 0);
             char *correct_answer = NULL;
             if(correct_answer_item && cJSON_IsString(correct_answer_item)) {
-                correct_answer = correct_answer_item->valuestring;
+                correct_answer = strdup(correct_answer_item->valuestring);
             }
             
-            /* Shuffle answers */
-            shuffle_cjson_array(answers_json);
+            /* Create shuffled copy of answers */
+            cJSON *shuffled_answers = create_shuffled_array(answers_json);
+            cJSON_Delete(answers_json);  /* Free original */
             
             /* Find new index of correct answer after shuffle */
             s->correct_answer_index = -1;
-            if(correct_answer) {
-                int size = cJSON_GetArraySize(answers_json);
+            if(correct_answer && shuffled_answers) {
+                int size = cJSON_GetArraySize(shuffled_answers);
                 for(int i = 0; i < size; i++) {
-                    cJSON *item = cJSON_GetArrayItem(answers_json, i);
+                    cJSON *item = cJSON_GetArrayItem(shuffled_answers, i);
                     if(item && cJSON_IsString(item) && item->valuestring && 
                        strcmp(item->valuestring, correct_answer) == 0) {
                         s->correct_answer_index = i;
                         break;
                     }
                 }
+                free(correct_answer);
             }
             
-            cJSON_AddItemToObject(json, "answers", answers_json);
+            if(shuffled_answers) {
+                cJSON_AddItemToObject(json, "answers", shuffled_answers);
+            } else {
+                cJSON_AddItemToObject(json, "answers", cJSON_CreateArray());
+            }
         } else {
             /* Fallback: empty array */
-            cJSON *empty_array = cJSON_CreateArray();
-            cJSON_AddItemToObject(json, "answers", empty_array);
+            cJSON_AddItemToObject(json, "answers", cJSON_CreateArray());
             if(answers_json) cJSON_Delete(answers_json);
             s->correct_answer_index = -1;
         }
@@ -100,7 +129,7 @@ void send_session_question(session *s, question *q, int question_num){
 
     /* Build response with route */
     char response[2048] = {'\0'};
-    int retour_snp = snprintf(response, sizeof(response), "POST question/new\n%s", json_string);
+    int retour_snp = snprintf(response, sizeof(response), "POST question/new\n%s\n\n", json_string);
     
     if(retour_snp < 0 || retour_snp >= (int)sizeof(response)) {
         free(json_string);
@@ -111,7 +140,7 @@ void send_session_question(session *s, question *q, int question_num){
     /* Send to all active players */
     for(int i = 0; i < clist_size(s->players); i++){
         client *c = (client *)clist_get(s->players, i);
-        if(c && c->infos_session.lives > 0) {
+        if(c && (s->type == CLASSIC || c->infos_session.lives >= 0)) {
             send_response(c, response);
         }
     }

@@ -172,7 +172,10 @@ int receive_from(int fd, buffer *b){
     ssize_t bytes = recv(fd, b->buffer + b->size, b->capacity - b->size - 1, 0);
     
     if (bytes < 0) {
-        /* Receive error */
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            return 0;
+        }
+        /* Real receive error */
         return -2;
     }
     
@@ -209,7 +212,7 @@ int server_receive_from(server *s, int i) {
     if(res == -1){
         info_log("[TCP] Client %d closed connection.", i);
     } else if(res == -2){
-        info_log("[TCP] Client %d error.", i);
+        //info_log("[TCP] Client %d error.", i);
         return 0;
     }
 
@@ -269,7 +272,7 @@ void remove_client_from_server_procedure(server *s, client *cl){
 void attach_client_to_server_procedure(server *s, client *cl){
     if(!s) return;
     if(!cl) return;
-    if(clist_append(s->clients, cl)){
+    if(!clist_append(s->clients, cl)){
         throw_error(CLIENT_ATTACH, "Error, fail to attach client to server procedure");
         client_destroy(cl);
     }

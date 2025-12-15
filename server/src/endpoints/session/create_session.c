@@ -17,7 +17,9 @@ int post_session_create(server* s, char* request, client *cl){
         return 1;
     }
 
+    while(request && (request[0] != '{' && request[0] != '\0')) request++;
     /* Parse JSON request */
+    while(request && (request[0] != '{' && request[0] != '\0')) request++;
     cJSON *json = cJSON_Parse(request);
     if (json == NULL) {
         const char *error_ptr = cJSON_GetErrorPtr();
@@ -31,8 +33,10 @@ int post_session_create(server* s, char* request, client *cl){
     
     /* Initialize session from JSON parameters */
     new_session->id = s->session_counter++;
-    new_session->name = get_from_json_string(json, "name");
-    new_session->themes_ids = get_from_json_int_array(json, "themesIds");
+    char *name_str = get_from_json_string(json, "name");
+    new_session->name = name_str ? strdup(name_str) : NULL;
+    new_session->themes_ids = get_from_json_int_array(json, "themeIds");
+    new_session->nb_themes = get_from_json_array_size(json, "themeIds");
     new_session->difficulty = get_session_difficulty(get_from_json_string(json, "difficulty"));
     new_session->nb_questions = get_from_json_int(json, "nbQuestions");
     new_session->time_limit = get_from_json_int(json, "timeLimit");
@@ -60,6 +64,12 @@ int post_session_create(server* s, char* request, client *cl){
     clist_append(new_session->players, cl);
     cl->infos_session.session = new_session;
     cl->infos_session.is_creator = 1;
+    cl->infos_session.joker_pass = 1;
+    cl->infos_session.joker_5050 = 1;
+    cl->infos_session.lives = new_session->nb_lives;
+    cl->infos_session.score = 0;
+    cl->infos_session.correctAnswers = 0;
+    cl->infos_session.eliminatedAt = -1;
     new_session->server = s;
     
     /* Register session with server */
@@ -76,8 +86,8 @@ int post_session_create(server* s, char* request, client *cl){
         "   \"jokers\":{\n"
         "      \"fifty\": 1,\n"
         "      \"skip\": 1\n"
-        "   }"
-        "}", new_session->id);
+        "   }\n"
+        "}\n\n", new_session->id);
 
         if (retour_snp < 0){
             throw_error(ENCODING_ERROR, "Erreur snprintf create session CLASSIC");
@@ -90,14 +100,14 @@ int post_session_create(server* s, char* request, client *cl){
         "   \"action\":\"session/create\",\n"
         "   \"statut\":\"201\",\n"
         "   \"message\":\"session created\",\n"
-        "   \"sessionId\": %d, \n"
+        "   \"sessionId\": %d,\n"
         "   \"isCreator\": true,\n"
-        "   \"lives\": %d, \n"
+        "   \"lives\": %d,\n"
         "   \"jokers\":{\n"
         "      \"fifty\": 1,\n"
         "      \"skip\": 1\n"
-        "   }"
-        "}", new_session->id, new_session->nb_lives);
+        "   }\n"
+        "}\n\n", new_session->id, new_session->nb_lives);
 
         if (retour_snp < 0){
             throw_error(ENCODING_ERROR, "Erreur snprintf create session BATTLE");
@@ -107,5 +117,6 @@ int post_session_create(server* s, char* request, client *cl){
 
     send_response(cl, response);
 
+    cJSON_Delete(json);
     return 0;
 }

@@ -1,12 +1,14 @@
 # Quizz Net
 
-> Lina LETHOOR & Sebastian CARON (Groupe A)
+## Groupe A
+- Lina LETHOOR
+- Sebastian CARON
 
 ## Compiler et lancer le server
 
 ### Compiler
 
-### Install openssl
+### Install openssl
 
 ```bash
 sudo apt install libssl-dev
