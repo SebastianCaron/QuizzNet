@@ -11,7 +11,9 @@ from gui.windows.game_questions import QuestionPage
 from gui.windows.game_result_question import ResultsPage
 from gui.windows.end_game import EndGamePage
 from src.endpoints.routes import message_route
-from PIL import Image, ImageTk
+from PIL import Image
+import io
+import base64
 
 class MainInterfaceClient(tk.Tk):
     """
@@ -144,7 +146,14 @@ class MainInterfaceClient(tk.Tk):
                 img = Image.open(path)
                 if size:
                     img = img.resize(size, Image.Resampling.LANCZOS)
-                return ImageTk.PhotoImage(img)
+                
+                # Convertir l'image PIL en format PNG en mémoire
+                buffer = io.BytesIO()
+                img.save(buffer, format='PNG')
+                buffer.seek(0)
+                
+                # Créer tk.PhotoImage à partir des données encodées en base64
+                return tk.PhotoImage(data=base64.b64encode(buffer.getvalue()))
             
             # Load and resize specific assets
             self.images["bg"] = load_img("gui/images/bg_test.jpeg", (800, 600))
