@@ -17,7 +17,6 @@ void post_question_answer(session *s, char *request, client *cl) {
     /* Skip to JSON body */
     while(request && (request[0] != '{' && request[0] != '\0')) request++;
     
-    debug_log("Request JSON: %s", request);
     /* Parse JSON request */
     cJSON *json = cJSON_Parse(request);
     if(!json) {
