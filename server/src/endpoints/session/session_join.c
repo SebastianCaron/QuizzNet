@@ -82,6 +82,8 @@ int post_session_join(server* s, char* request, client *cl){
     cl->infos_session.correctAnswers = 0;
     cl->infos_session.eliminatedAt = -1;
     cl->infos_session.is_creator = 0;
+    cl->infos_session.has_answered = 0;
+    cl->infos_session.skip = 0;
 
     /* Build notification for other players */
     retour_snp = snprintf(response_other_players, 1023, "POST session/player/joined\n{"

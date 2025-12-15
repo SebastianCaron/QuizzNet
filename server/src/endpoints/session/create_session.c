@@ -70,6 +70,8 @@ int post_session_create(server* s, char* request, client *cl){
     cl->infos_session.score = 0;
     cl->infos_session.correctAnswers = 0;
     cl->infos_session.eliminatedAt = -1;
+    cl->infos_session.has_answered = 0;
+    cl->infos_session.skip = 0;
     new_session->server = s;
     
     /* Register session with server */

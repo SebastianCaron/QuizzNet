@@ -401,6 +401,8 @@ void session_destroy(session *s){
             /* Clear session reference before re-attaching */
             c->infos_session.session = NULL;
             c->infos_session.is_creator = 0;
+            c->infos_session.has_answered = 0;
+            c->infos_session.skip = 0;
             /* Only re-attach clients that are still connected */
             attach_client_to_server_procedure(s->server, c);
         } else if(c) {

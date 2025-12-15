@@ -22,6 +22,9 @@ def response_session_create(message, app):
 
     if json_message["statut"] == "201":
 
+        # Reset local session state for the new game
+        info_session.reset_for_new_game()
+
         # Battle Mode setup: Set lives if applicable
         if "lives" in json_message:
             info_session.set_nb_lives(json_message["lives"])
@@ -33,6 +36,9 @@ def response_session_create(message, app):
 
         # Mark local player as the Host (Grants "Start Game" button access)
         info_session.set_creator()
+        
+        # Add the creator to the player list
+        info_session.set_new_player(info_session.get_pseudo())
 
         # Prepare and display the Waiting Room
         page = app.frames[WaitingRoomPage]

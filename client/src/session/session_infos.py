@@ -143,8 +143,10 @@ class InfoSession:
         self.players_score = {}
         self.joker_fifty = 0
         self.joker_pass = 0
-        self.lives = 0
+        self.lives = -1
+        self.lives_session = -1
         self.session_started = False
+        self.is_creator = False
 
 
 # Global instance used throughout the client application

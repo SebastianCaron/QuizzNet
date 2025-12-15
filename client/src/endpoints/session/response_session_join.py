@@ -22,6 +22,9 @@ def response_session_join(message, app):
 
     if json_message["statut"] == "201":
 
+        # Reset local session state for the new game
+        info_session.reset_for_new_game()
+
         # Setup Battle Mode specific settings (lives)
         if json_message["mode"] == "battle":
             info_session.set_nb_lives(json_message["lives"])
